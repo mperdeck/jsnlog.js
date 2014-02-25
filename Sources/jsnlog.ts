@@ -2,7 +2,7 @@
 
 function JL(loggerName?: string): JSNLogLogger {
     
-    // If name is empty, return the root logger
+    // If name is empty, return the root logger  
     if (!loggerName) {
         return JL.__;
     }
@@ -53,7 +53,7 @@ function JL(loggerName?: string): JSNLogLogger {
                 //
                 // Note that prev at this point refers to the parent logger.
 
-                <any>JL.Logger.prototype = prev;
+                JL.Logger.prototype = prev;
 
                 currentLogger = new JL.Logger(accumulatedLoggerName);
                 prev['__' + accumulatedLoggerName] = currentLogger;  
@@ -195,7 +195,7 @@ module JL {
 
         // set to super high level, so if user increases level, level is unlikely to get 
         // above sendWithBufferLevel
-        private sendWithBufferLevel: number = 2147483647; 
+        private sendWithBufferLevel: number = 2147483647;
 
         private storeInBufferLevel: number = -2147483648;
         private bufferSize: number = 0; // buffering switch off by default
@@ -216,8 +216,8 @@ module JL {
         // in some fashion (eg. serialize) before returning.
 
         constructor(
-            public appenderName: string, 
-            public sendLogItems: (logItems: LogItem[]) => void) { 
+            public appenderName: string,
+            public sendLogItems: (logItems: LogItem[]) => void) {
         }
 
         public setOptions(options: JSNLogAppenderOptions): JSNLogAppender {
@@ -250,7 +250,7 @@ module JL {
             if (level < this.storeInBufferLevel) {
                 // Ignore the log item completely
                 return;
-            } 
+            }
 
             logItem = new LogItem(level, message, loggerName, (new Date).getTime());
 
@@ -495,6 +495,21 @@ module JL {
         return new AjaxAppender(appenderName);
     }
 }
+
+// Support CommonJS module format
+
+var exports: any;
+if (typeof exports !== 'undefined') {
+    exports.JL = JL;
+}
+
+// Support AMD module format
+
+var define: any;
+if (typeof define == 'function' && define.amd) {
+    define(function () { return JL; });
+}
+
 
 
 

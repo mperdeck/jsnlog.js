@@ -15,7 +15,7 @@
 */
 
 interface JSNLogOptions {
-    enabled?: bool;
+    enabled?: boolean;
     maxMessages?: number;
     clientIP?: string;
     requestId?: string;

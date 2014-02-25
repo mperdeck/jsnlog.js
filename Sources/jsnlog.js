@@ -1,17 +1,38 @@
+/// <reference path="jsnlog_interfaces.d.ts"/>
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-/// <reference path="jsnlog_interfaces.d.ts"/>
 function JL(loggerName) {
+    // If name is empty, return the root logger
     if (!loggerName) {
         return JL.__;
     }
 
     var accumulatedLoggerName = '';
     var logger = ('.' + loggerName).split('.').reduce(function (prev, curr, idx, arr) {
+        // if loggername is a.b.c, than currentLogger will be set to the loggers
+        // root   (prev: JL, curr: '')
+        // a      (prev: JL.__, curr: 'a')
+        // a.b    (prev: JL.__.__a, curr: 'b')
+        // a.b.c  (prev: JL.__.__a.__a.b, curr: 'c')
+        // Note that when a new logger name is encountered (such as 'a.b.c'),
+        // a new logger object is created and added as a property to the parent ('a.b').
+        // The root logger is added as a property of the JL object itself.
+        // It is essential that the name of the property containing the child logger
+        // contains the full 'path' name of the child logger ('a.b.c') instead of
+        // just the bit after the last period ('c').
+        // This is because the parent inherits properties from its ancestors.
+        // So if the root has a child logger 'c' (stored in a property 'c' of the root logger),
+        // then logger 'a.b' has that same property 'c' through inheritance.
+        // The names of the logger properties start with __, so the root logger
+        // (which has name ''), has a nice property name '__'.
+        // accumulatedLoggerName evaluates false ('' is falsy) in first iteration when prev is the root logger.
+        // accumulatedLoggerName will be the logger name corresponding with the logger in currentLogger.
+        // Keep in mind that the currentLogger may not be defined yet, so can't get the name from
+        // the currentLogger object itself.
         if (accumulatedLoggerName) {
             accumulatedLoggerName += '.' + curr;
         } else {
@@ -20,6 +41,8 @@ function JL(loggerName) {
 
         var currentLogger = prev['__' + accumulatedLoggerName];
 
+        // If the currentLogger (or the actual logger being sought) does not yet exist,
+        // create it now.
         if (currentLogger === undefined) {
             // Set the prototype of the Logger constructor function to the parent of the logger
             // to be created. This way, __proto of the new logger object will point at the parent.
@@ -79,12 +102,18 @@ var JL;
     Filters that determine whether a log can go ahead.
     */
     function allow(filters) {
+        // If enabled is not null or undefined, then if it is false, then return false
+        // Note that undefined==null (!)
         if (!(JL.enabled == null)) {
             if (!JL.enabled) {
                 return false;
             }
         }
 
+        // If maxMessages is not null or undefined, then if it is 0, then return false.
+        // Note that maxMessages contains number of messages that are still allowed to send.
+        // It is decremented each time messages are sent. It can be negative when batch size > 1.
+        // Note that undefined==null (!)
         if (!(JL.maxMessages == null)) {
             if (JL.maxMessages < 1) {
                 return false;
@@ -257,12 +286,14 @@ var JL;
                 return;
             }
 
-            logItem = new LogItem(level, message, loggerName, (new Date()).getTime());
+            logItem = new LogItem(level, message, loggerName, (new Date).getTime());
 
             if (level < this.level) {
+                // Store in the hold buffer. Do not send.
                 if (this.bufferSize > 0) {
                     this.buffer.push(logItem);
 
+                    // If we exceeded max buffer size, remove oldest item
                     if (this.buffer.length > this.bufferSize) {
                         this.buffer.shift();
                     }
@@ -275,6 +306,8 @@ var JL;
                 // Want to send the item, but not the contents of the buffer
                 this.batchBuffer.push(logItem);
             } else {
+                // Want to send both the item and the contents of the buffer.
+                // Send contents of buffer first, because logically they happened first.
                 if (this.buffer.length) {
                     this.batchBuffer = this.batchBuffer.concat(this.buffer);
                     this.buffer.length = 0;
@@ -300,6 +333,9 @@ var JL;
                 }
             }
 
+            // If maxMessages is not null or undefined, then decrease it by the batch size.
+            // This can result in a negative maxMessages.
+            // Note that undefined==null (!)
             if (!(JL.maxMessages == null)) {
                 JL.maxMessages -= this.batchBuffer.length;
             }
@@ -399,6 +435,7 @@ var JL;
             var i = 0;
             var message;
 
+            // If we can't find any appenders, do nothing
             if (!this.appenders) {
                 return this;
             }
@@ -407,6 +444,7 @@ var JL;
                 message = this.stringifyLogObject(logObject);
 
                 if (allowMessage(this, message)) {
+                    // See whether message is a duplicate
                     if (this.onceOnly) {
                         i = this.onceOnly.length - 1;
                         while (i >= 0) {
@@ -477,3 +515,17 @@ var JL;
     }
     JL.createAjaxAppender = createAjaxAppender;
 })(JL || (JL = {}));
+
+// Support CommonJS module format
+var exports;
+if (typeof exports !== 'undefined') {
+    exports.JL = JL;
+}
+
+// Support AMD module format
+var define;
+if (typeof define == 'function' && define.amd) {
+    define(function () {
+        return JL;
+    });
+}
