@@ -3,6 +3,16 @@
   "repo": "component/jsnlog.js",
   "description": "Tiny JavaScript logging library, simple and well documented. Lots of options to filter logging data. Sends log data to the server using AJAX.",
   "version": "__Version__",
+  "homepage": "http://js.jsnlog.com",
+  "authors": [
+    {
+      "name": "Matt Perdeck",
+      "email": "mperdeck@gmail.com"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/mperdeck/jsnlog.js/issues"
+  },  
   "keywords": ["logging", "debugging",	"dev", "development"],
   "dependencies": {},
   "development": {},
