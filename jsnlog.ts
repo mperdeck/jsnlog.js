@@ -315,7 +315,7 @@ module JL {
     // ---------------------
 
     export class AjaxAppender extends Appender implements JSNLogAjaxAppender {
-        private url: string = "jsnlog.logger";
+        private url: string = "/jsnlog.logger";
 
         public setOptions(options: JSNLogAjaxAppenderOptions): JSNLogAjaxAppender {
             copyProperty("url", options, this);
