@@ -1,17 +1,1 @@
-{
-  "name": "jsnlog.js",
-  "main": "jsnlog.js",
-  "version": "2.4.3",
-  "homepage": "https://github.com/mperdeck/jsnlog.js",
-  "authors": [
-    "mperdeck <mperdeck@gmail.com>"
-  ],
-  "license": "MIT",
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
-    "tests"  
-  ]
-}
+{  "name": "jsnlog.js",  "main": "jsnlog.js",  "version": "2.4.3",  "homepage": "https://github.com/mperdeck/jsnlog.js",  "authors": [    "mperdeck <mperdeck@gmail.com>"  ],  "license": "MIT",  "ignore": [    "**/.*",    "node_modules",    "bower_components",    "test",    "tests"    ]}
