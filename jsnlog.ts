@@ -552,6 +552,9 @@ module JL {
 
     export function createAjaxAppender(appenderName: string): JSNLogAjaxAppender {
         return new AjaxAppender(appenderName);
+
+    export function createConsoleAppender(appenderName: string): JSNLogConsoleAppender {
+        return new ConsoleAppender(appenderName);
     }
 }
 
