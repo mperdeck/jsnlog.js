@@ -1,15 +1,17 @@
 /// <reference path="jsnlog_interfaces.d.ts"/>
 
-function JL(loggerName?: string): JSNLogLogger {
-    
-    // If name is empty, return the root logger  
-    if (!loggerName) {
+function JL(loggerName?: string): JSNLogLogger
+{
+    // If name is empty, return the root logger
+    if (!loggerName)
+    {
         return JL.__;
     }
 
-    var accumulatedLoggerName='';
+    var accumulatedLoggerName = '';
     var logger: JL.Logger = ('.' + loggerName).split('.').reduce(
-        function (prev: JL.Logger, curr: string, idx: number, arr: string[]) { 
+        function (prev: JL.Logger, curr: string, idx: number, arr: string[])
+        {
             // if loggername is a.b.c, than currentLogger will be set to the loggers
             // root   (prev: JL, curr: '')
             // a      (prev: JL.__, curr: 'a')
@@ -34,17 +36,20 @@ function JL(loggerName?: string): JSNLogLogger {
             // accumulatedLoggerName will be the logger name corresponding with the logger in currentLogger.
             // Keep in mind that the currentLogger may not be defined yet, so can't get the name from
             // the currentLogger object itself.
-            if (accumulatedLoggerName) {
+            if (accumulatedLoggerName)
+            {
                 accumulatedLoggerName += '.' + curr;
-            } else {
+            } else
+            {
                 accumulatedLoggerName = curr;
             }
 
             var currentLogger = prev['__' + accumulatedLoggerName];
-            
+
             // If the currentLogger (or the actual logger being sought) does not yet exist, 
             // create it now.
-            if (currentLogger === undefined) {
+            if (currentLogger === undefined)
+            {
 
                 // Set the prototype of the Logger constructor function to the parent of the logger
                 // to be created. This way, __proto of the new logger object will point at the parent.
@@ -56,16 +61,17 @@ function JL(loggerName?: string): JSNLogLogger {
                 JL.Logger.prototype = prev;
 
                 currentLogger = new JL.Logger(accumulatedLoggerName);
-                prev['__' + accumulatedLoggerName] = currentLogger;  
+                prev['__' + accumulatedLoggerName] = currentLogger;
             }
-            
+
             return currentLogger;
         }, JL.__);
 
     return logger;
 }
 
-module JL {
+module JL
+{
 
     export var enabled: boolean;
     export var maxMessages: number;
@@ -86,7 +92,8 @@ module JL {
        its parent).
     3) Otherwise, the from property is copied to the to property.
     */
-    function copyProperty(propertyName: string, from: any, to: any): void {
+    function copyProperty(propertyName: string, from: any, to: any): void
+    {
         if (from[propertyName] === undefined) { return; }
         if (from[propertyName] === null) { delete to[propertyName]; return; }
         to[propertyName] = from[propertyName];
@@ -99,10 +106,12 @@ module JL {
     @param filters
         Filters that determine whether a log can go ahead.
     */
-    function allow(filters: JSNLogFilterOptions): boolean {
+    function allow(filters: JSNLogFilterOptions): boolean
+    {
         // If enabled is not null or undefined, then if it is false, then return false
         // Note that undefined==null (!)
-        if (!(JL.enabled == null)) {
+        if (!(JL.enabled == null))
+        {
             if (!JL.enabled) { return false; }
         }
 
@@ -110,21 +119,26 @@ module JL {
         // Note that maxMessages contains number of messages that are still allowed to send.
         // It is decremented each time messages are sent. It can be negative when batch size > 1.
         // Note that undefined==null (!)
-        if (!(JL.maxMessages == null)) {
+        if (!(JL.maxMessages == null))
+        {
             if (JL.maxMessages < 1) { return false; }
         }
 
         // If the regex contains a bug, that will throw an exception.
         // Ignore this, and pass the log item (better too much than too little).
 
-        try {
-            if (filters.userAgentRegex) {
+        try
+        {
+            if (filters.userAgentRegex)
+            {
                 if (!new RegExp(filters.userAgentRegex).test(navigator.userAgent)) { return false; }
             }
         } catch (e) { }
 
-        try {
-            if (filters.ipRegex && JL.clientIP) {
+        try
+        {
+            if (filters.ipRegex && JL.clientIP)
+            {
                 if (!new RegExp(filters.ipRegex).test(JL.clientIP)) { return false; }
             }
         } catch (e) { }
@@ -141,12 +155,15 @@ module JL {
     @param message
         Message to be logged.
     */
-    function allowMessage(filters: JSNLogFilterOptions, message: string): boolean {
+    function allowMessage(filters: JSNLogFilterOptions, message: string): boolean
+    {
         // If the regex contains a bug, that will throw an exception.
         // Ignore this, and pass the log item (better too much than too little).
 
-        try {
-            if (filters.disallow) {
+        try
+        {
+            if (filters.disallow)
+            {
                 if (new RegExp(filters.disallow).test(message)) { return false; }
             }
         } catch (e) { }
@@ -154,7 +171,8 @@ module JL {
         return true;
     }
 
-    export function setOptions(options: JSNLogOptions): JSNLogStatic {
+    export function setOptions(options: JSNLogOptions): JSNLogStatic
+    {
         copyProperty("enabled", options, this);
         copyProperty("maxMessages", options, this);
         copyProperty("clientIP", options, this);
@@ -173,7 +191,8 @@ module JL {
 
     // ---------------------
 
-    export class LogItem {
+    export class LogItem
+    {
         // l: level
         // m: message
         // n: logger name
@@ -182,12 +201,13 @@ module JL {
         // Keeping the property names really short, because they will be sent in the
         // JSON payload to the server.
         constructor(public l: number, public m: string,
-            public n: string, public t: number) {}
+            public n: string, public t: number) { }
     }
 
     // ---------------------
 
-    export class Appender implements JSNLogAppender, JSNLogFilterOptions {
+    export class Appender implements JSNLogAppender, JSNLogFilterOptions
+    {
         public level: number = JL.getTraceLevel();
         public ipRegex: string;
         public userAgentRegex: string;
@@ -217,10 +237,12 @@ module JL {
 
         constructor(
             public appenderName: string,
-            public sendLogItems: (logItems: LogItem[]) => void) {
+            public sendLogItems: (logItems: LogItem[]) => void)
+        {
         }
 
-        public setOptions(options: JSNLogAppenderOptions): JSNLogAppender {
+        public setOptions(options: JSNLogAppenderOptions): JSNLogAppender
+        {
             copyProperty("level", options, this);
             copyProperty("ipRegex", options, this);
             copyProperty("userAgentRegex", options, this);
@@ -241,60 +263,72 @@ module JL {
         (eg., sent to the server), this method calls this.sendLogItems
         with an array with all items to be processed.
         */
-        public log(level: number, message: string, loggerName: string): void {
+        public log(level: number, message: string, loggerName: string): void
+        {
             var logItem: LogItem;
 
             if (!allow(this)) { return; }
             if (!allowMessage(this, message)) { return; }
 
-            if (level < this.storeInBufferLevel) {
+            if (level < this.storeInBufferLevel)
+            {
                 // Ignore the log item completely
                 return;
             }
 
             logItem = new LogItem(level, message, loggerName, (new Date).getTime());
 
-            if (level < this.level) {
+            if (level < this.level)
+            {
                 // Store in the hold buffer. Do not send.
-                if (this.bufferSize > 0) {
+                if (this.bufferSize > 0)
+                {
                     this.buffer.push(logItem);
 
                     // If we exceeded max buffer size, remove oldest item
-                    if (this.buffer.length > this.bufferSize) {
+                    if (this.buffer.length > this.bufferSize)
+                    {
                         this.buffer.shift();
                     }
                 }
 
                 return;
             }
-                
-            if (level < this.sendWithBufferLevel) {
+
+            if (level < this.sendWithBufferLevel)
+            {
                 // Want to send the item, but not the contents of the buffer
                 this.batchBuffer.push(logItem);
 
-            } else {
+            } else
+            {
                 // Want to send both the item and the contents of the buffer.
                 // Send contents of buffer first, because logically they happened first.
-                if (this.buffer.length) {
+                if (this.buffer.length)
+                {
                     this.batchBuffer = this.batchBuffer.concat(this.buffer);
                     this.buffer.length = 0;
                 }
                 this.batchBuffer.push(logItem);
             }
 
-            if (this.batchBuffer.length >= this.batchSize) {
+            if (this.batchBuffer.length >= this.batchSize)
+            {
                 this.sendBatch();
                 return;
             }
         }
 
         // Processes the batch buffer
-        private sendBatch(): void {
-            if (this.batchBuffer.length == 0) {
+        private sendBatch(): void
+        {
+            if (this.batchBuffer.length == 0)
+            {
                 return;
             }
 
-            if (!(JL.maxMessages == null)) {
+            if (!(JL.maxMessages == null))
+            {
                 if (JL.maxMessages < 1) { return; }
             }
 
@@ -303,7 +337,8 @@ module JL {
             // If maxMessages is not null or undefined, then decrease it by the batch size.
             // This can result in a negative maxMessages.
             // Note that undefined==null (!)
-            if (!(JL.maxMessages == null)) {
+            if (!(JL.maxMessages == null))
+            {
                 JL.maxMessages -= this.batchBuffer.length;
             }
 
@@ -314,19 +349,23 @@ module JL {
 
     // ---------------------
 
-    export class AjaxAppender extends Appender implements JSNLogAjaxAppender {
+    export class AjaxAppender extends Appender implements JSNLogAjaxAppender
+    {
         private url: string = "/jsnlog.logger";
 
-        public setOptions(options: JSNLogAjaxAppenderOptions): JSNLogAjaxAppender {
+        public setOptions(options: JSNLogAjaxAppenderOptions): JSNLogAjaxAppender
+        {
             copyProperty("url", options, this);
             super.setOptions(options);
             return this;
         }
 
-        public sendLogItemsAjax(logItems: LogItem[]): void {
+        public sendLogItemsAjax(logItems: LogItem[]): void
+        {
             // JSON.stringify is only supported on IE8+
             // Use try-catch in case we get an exception here.
-            try {
+            try
+            {
                 var json: string = JSON.stringify({
                     r: JL.requestId,
                     lg: logItems
@@ -344,73 +383,95 @@ module JL {
             } catch (e) { }
         }
 
-        constructor(appenderName: string) {
+        constructor(appenderName: string)
+        {
             super(appenderName, AjaxAppender.prototype.sendLogItemsAjax);
         }
     }
     // ---------------------
 
-    export class ConsoleAppender extends Appender implements JSNLogConsoleAppender {
+    export class ConsoleAppender extends Appender implements JSNLogConsoleAppender
+    {
 
-        private clog(logEntry: string) {
+        private clog(logEntry: string)
+        {
             console.log(logEntry);
         }
 
-        private cerror(logEntry: string) {
-            if (console.error) {
+        private cerror(logEntry: string)
+        {
+            if (console.error)
+            {
                 console.error(logEntry);
-            } else {
+            } else
+            {
                 this.clog(logEntry);
             }
         }
 
-        private cinfo(logEntry: string) {
-            if (console.info) {
+        private cinfo(logEntry: string)
+        {
+            if (console.info)
+            {
                 console.info(logEntry);
-            } else {
+            } else
+            {
                 this.clog(logEntry);
             }
         }
 
-        private cwarn(logEntry: string) {
-            if (console.warn) {
+        private cwarn(logEntry: string)
+        {
+            if (console.warn)
+            {
                 console.warn(logEntry);
-            } else {
+            } else
+            {
                 this.clog(logEntry);
             }
         }
 
-        public sendLogItemsConsole(logItems: LogItem[]): void {
-            try {
+        public sendLogItemsConsole(logItems: LogItem[]): void
+        {
+            try
+            {
                 if (!console) { return; }
-                
+
                 var i;
-                for (i = 0; i < logItems.length; ++i) {
+                for (i = 0; i < logItems.length; ++i)
+                {
                     var li = logItems[i];
                     var msg = li.n + ": " + li.m;
 
-                    if (li.l <= JL.getDebugLevel()) {
+                    if (li.l <= JL.getDebugLevel())
+                    {
                         this.clog(msg);
-                    } else if (li.l <= JL.getInfoLevel()) {
+                    } else if (li.l <= JL.getInfoLevel())
+                    {
                         this.cinfo(msg);
-                    } else if (li.l <= JL.getWarnLevel()) {
+                    } else if (li.l <= JL.getWarnLevel())
+                    {
                         this.cwarn(msg);
-                    } else {
+                    } else
+                    {
                         this.cerror(msg);
                     }
                 }
-            } catch (e) {
+            } catch (e)
+            {
             }
         }
 
-        constructor(appenderName: string) {
+        constructor(appenderName: string)
+        {
             super(appenderName, ConsoleAppender.prototype.sendLogItemsConsole);
         }
     }
 
     // --------------------
 
-    export class Logger implements JSNLogLogger, JSNLogFilterOptions {
+    export class Logger implements JSNLogLogger, JSNLogFilterOptions
+    {
         public appenders: Appender[];
 
         // Array of strings with regular expressions. Used to stop duplicate messages.
@@ -430,7 +491,8 @@ module JL {
         // array is undefined, which is falsey.
         private seenRegexes: boolean[];
 
-        constructor(public loggerName: string) {
+        constructor(public loggerName: string)
+        {
             // Create seenRexes, otherwise this logger will use the seenRexes
             // of its parent via the prototype chain.
             this.seenRegexes = [];
@@ -441,34 +503,39 @@ module JL {
             switch (typeof logObject)
             {
                 case "string":
-                  return logObject;
+                    return logObject;
                 case "number":
-                  return logObject.toString();
+                    return logObject.toString();
                 case "boolean":
-                  return logObject.toString();
+                    return logObject.toString();
                 case "undefined":
-                  return "undefined";
+                    return "undefined";
                 case "function":
-                  if (logObject instanceof RegExp) {
-                    return logObject.toString();
-                  } else {
-                      return this.stringifyLogObject(logObject());
-                  }
+                    if (logObject instanceof RegExp)
+                    {
+                        return logObject.toString();
+                    } else
+                    {
+                        return this.stringifyLogObject(logObject());
+                    }
                 case "object":
-                  if ((logObject instanceof RegExp) ||
-                      (logObject instanceof String) ||
-                      (logObject instanceof Number) ||
-                      (logObject instanceof Boolean)) {
-                    return logObject.toString();
-                  } else {
-                    return JSON.stringify(logObject);
-                  }
+                    if ((logObject instanceof RegExp) ||
+                        (logObject instanceof String) ||
+                        (logObject instanceof Number) ||
+                        (logObject instanceof Boolean))
+                    {
+                        return logObject.toString();
+                    } else
+                    {
+                        return JSON.stringify(logObject);
+                    }
                 default:
-                  return "unknown";
+                    return "unknown";
             }
         }
 
-        public setOptions(options: JSNLogLoggerOptions): JSNLogLogger {
+        public setOptions(options: JSNLogLoggerOptions): JSNLogLogger
+        {
             copyProperty("level", options, this);
             copyProperty("userAgentRegex", options, this);
             copyProperty("disallow", options, this);
@@ -482,25 +549,32 @@ module JL {
             return this;
         }
 
-        public log(level: number, logObject: any): JSNLogLogger {
+        public log(level: number, logObject: any): JSNLogLogger
+        {
             var i: number = 0;
             var message: string;
 
             // If we can't find any appenders, do nothing
             if (!this.appenders) { return this; }
 
-            if (((level >= this.level)) && allow(this)) {
+            if (((level >= this.level)) && allow(this))
+            {
                 message = this.stringifyLogObject(logObject);
 
-                if (allowMessage(this, message)) {
+                if (allowMessage(this, message))
+                {
 
                     // See whether message is a duplicate
 
-                    if (this.onceOnly) {
+                    if (this.onceOnly)
+                    {
                         i = this.onceOnly.length - 1;
-                        while (i >= 0) {
-                            if (new RegExp(this.onceOnly[i]).test(message)) {
-                                if (this.seenRegexes[i]) {
+                        while (i >= 0)
+                        {
+                            if (new RegExp(this.onceOnly[i]).test(message))
+                            {
+                                if (this.seenRegexes[i])
+                                {
                                     return this;
                                 }
 
@@ -514,7 +588,8 @@ module JL {
                     // Pass message to all appenders
 
                     i = this.appenders.length - 1;
-                    while (i >= 0) {
+                    while (i >= 0)
+                    {
                         this.appenders[i].log(level, message, this.loggerName);
                         i--;
                     }
@@ -550,28 +625,29 @@ module JL {
             appenders: [defaultAppender]
         });
 
-    export function createAjaxAppender(appenderName: string): JSNLogAjaxAppender {
+    export function createAjaxAppender(appenderName: string): JSNLogAjaxAppender
+    {
         return new AjaxAppender(appenderName);
+    }
 
-    export function createConsoleAppender(appenderName: string): JSNLogConsoleAppender {
+    export function createConsoleAppender(appenderName: string): JSNLogConsoleAppender
+    {
         return new ConsoleAppender(appenderName);
     }
 }
-
-// Support CommonJS module format
+    
+// Support CommonJS module format 
 
 var exports: any;
-if (typeof exports !== 'undefined') {
+if (typeof exports !== 'undefined')
+{
     exports.JL = JL;
 }
 
 // Support AMD module format
 
 var define: any;
-if (typeof define == 'function' && define.amd) {
+if (typeof define == 'function' && define.amd)
+{
     define(function () { return JL; });
 }
-
-
-
-
