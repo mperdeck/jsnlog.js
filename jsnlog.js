@@ -382,6 +382,68 @@ var JL;
     })(Appender);
     JL.AjaxAppender = AjaxAppender;
 
+    // ---------------------
+    var ConsoleAppender = (function (_super) {
+        __extends(ConsoleAppender, _super);
+        function ConsoleAppender(appenderName) {
+            _super.call(this, appenderName, ConsoleAppender.prototype.sendLogItemsConsole);
+        }
+        ConsoleAppender.prototype.clog = function (logEntry) {
+            console.log(logEntry);
+        };
+
+        ConsoleAppender.prototype.cerror = function (logEntry) {
+            if (console.error) {
+                console.error(logEntry);
+            } else {
+                this.clog(logEntry);
+            }
+        };
+
+        ConsoleAppender.prototype.cinfo = function (logEntry) {
+            if (console.info) {
+                console.info(logEntry);
+            } else {
+                this.clog(logEntry);
+            }
+        };
+
+        ConsoleAppender.prototype.cwarn = function (logEntry) {
+            if (console.warn) {
+                console.warn(logEntry);
+            } else {
+                this.clog(logEntry);
+            }
+        };
+
+        ConsoleAppender.prototype.sendLogItemsConsole = function (logItems) {
+            try  {
+                if (!console) {
+                    return;
+                }
+
+                var i;
+                for (i = 0; i < logItems.length; ++i) {
+                    var li = logItems[i];
+                    var msg = li.n + ": " + li.m;
+
+                    if (li.l <= JL.getDebugLevel()) {
+                        this.clog(msg);
+                    } else if (li.l <= JL.getInfoLevel()) {
+                        this.cinfo(msg);
+                    } else if (li.l <= JL.getWarnLevel()) {
+                        this.cwarn(msg);
+                    } else {
+                        this.cerror(msg);
+                    }
+                }
+            } catch (e) {
+            }
+        };
+        return ConsoleAppender;
+    })(Appender);
+    JL.ConsoleAppender = ConsoleAppender;
+
     // --------------------
     var Logger = (function () {
         function Logger(loggerName) {

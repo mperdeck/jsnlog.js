@@ -65,6 +65,9 @@ interface JSNLogAjaxAppender extends JSNLogAppender {
     setOptions(options: JSNLogAjaxAppenderOptions): JSNLogAjaxAppender;
 }
 
+interface JSNLogConsoleAppender extends JSNLogAppender {
+}
+
 interface JSNLogStatic {
     (loggerName?: string): JSNLogLogger;
 

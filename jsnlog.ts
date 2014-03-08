@@ -348,6 +348,65 @@ module JL {
             super(appenderName, AjaxAppender.prototype.sendLogItemsAjax);
         }
     }
+    // ---------------------
+
+    export class ConsoleAppender extends Appender implements JSNLogConsoleAppender {
+
+        private clog(logEntry: string) {
+            console.log(logEntry);
+        }
+
+        private cerror(logEntry: string) {
+            if (console.error) {
+                console.error(logEntry);
+            } else {
+                this.clog(logEntry);
+            }
+        }
+
+        private cinfo(logEntry: string) {
+            if (console.info) {
+                console.info(logEntry);
+            } else {
+                this.clog(logEntry);
+            }
+        }
+
+        private cwarn(logEntry: string) {
+            if (console.warn) {
+                console.warn(logEntry);
+            } else {
+                this.clog(logEntry);
+            }
+        }
+
+        public sendLogItemsConsole(logItems: LogItem[]): void {
+            try {
+                if (!console) { return; }
+                
+                var i;
+                for (i = 0; i < logItems.length; ++i) {
+                    var li = logItems[i];
+                    var msg = li.n + ": " + li.m;
+
+                    if (li.l <= JL.getDebugLevel()) {
+                        this.clog(msg);
+                    } else if (li.l <= JL.getInfoLevel()) {
+                        this.cinfo(msg);
+                    } else if (li.l <= JL.getWarnLevel()) {
+                        this.cwarn(msg);
+                    } else {
+                        this.cerror(msg);
+                    }
+                }
+            } catch (e) {
+            }
+        }
+
+        constructor(appenderName: string) {
+            super(appenderName, ConsoleAppender.prototype.sendLogItemsConsole);
+        }
+    }
 
     // --------------------
 
