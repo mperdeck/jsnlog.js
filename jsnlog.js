@@ -1,4 +1,4 @@
-/// <reference path="jsnlog_interfaces.d.ts"/>
+﻿/// <reference path="jsnlog_interfaces.d.ts"/>
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -400,6 +400,14 @@ var JL;
             }
         };
 
+        ConsoleAppender.prototype.cwarn = function (logEntry) {
+            if (console.warn) {
+                console.warn(logEntry);
+            } else {
+                this.clog(logEntry);
+            }
+        };
+
         ConsoleAppender.prototype.cinfo = function (logEntry) {
             if (console.info) {
                 console.info(logEntry);
@@ -408,11 +416,18 @@ var JL;
             }
         };
 
-        ConsoleAppender.prototype.cwarn = function (logEntry) {
-            if (console.warn) {
-                console.warn(logEntry);
+        // IE11 has a console.debug function. But its console doesn't have
+        // the option to show/hide debug messages (the same way Chrome and FF do),
+        // even though it does have such buttons for Error, Warn, Info.
+        //
+        // For now, this means that debug messages can not be hidden on IE.
+        // Live with this, seeing that it works fine on FF and Chrome, which
+        // will be much more popular with developers.
+        ConsoleAppender.prototype.cdebug = function (logEntry) {
+            if (console.debug) {
+                console.debug(logEntry);
             } else {
-                this.clog(logEntry);
+                this.cinfo(logEntry);
             }
         };
 
@@ -428,7 +443,7 @@ var JL;
                     var msg = li.n + ": " + li.m;
 
                     if (li.l <= JL.getDebugLevel()) {
-                        this.clog(msg);
+                        this.cdebug(msg);
                     } else if (li.l <= JL.getInfoLevel()) {
                         this.cinfo(msg);
                     } else if (li.l <= JL.getWarnLevel()) {
@@ -576,6 +591,11 @@ var JL;
         return new AjaxAppender(appenderName);
     }
     JL.createAjaxAppender = createAjaxAppender;
+
+    function createConsoleAppender(appenderName) {
+        return new ConsoleAppender(appenderName);
+    }
+    JL.createConsoleAppender = createConsoleAppender;
 })(JL || (JL = {}));
 
 // Support CommonJS module format
@@ -591,3 +611,4 @@ if (typeof define == 'function' && define.amd) {
         return JL;
     });
 }
+//# sourceMappingURL=jsnlog.js.map

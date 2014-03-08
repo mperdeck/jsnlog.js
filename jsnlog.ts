@@ -409,6 +409,17 @@ module JL
             }
         }
 
+        private cwarn(logEntry: string)
+        {
+            if (console.warn)
+            {
+                console.warn(logEntry);
+            } else
+            {
+                this.clog(logEntry);
+            }
+        }
+
         private cinfo(logEntry: string)
         {
             if (console.info)
@@ -420,14 +431,21 @@ module JL
             }
         }
 
-        private cwarn(logEntry: string)
+        // IE11 has a console.debug function. But its console doesn't have 
+        // the option to show/hide debug messages (the same way Chrome and FF do),
+        // even though it does have such buttons for Error, Warn, Info.
+        //
+        // For now, this means that debug messages can not be hidden on IE.
+        // Live with this, seeing that it works fine on FF and Chrome, which
+        // will be much more popular with developers.
+        private cdebug(logEntry: string)
         {
-            if (console.warn)
+            if (console.debug)
             {
-                console.warn(logEntry);
+                console.debug(logEntry);
             } else
             {
-                this.clog(logEntry);
+                this.cinfo(logEntry);
             }
         }
 
@@ -445,7 +463,7 @@ module JL
 
                     if (li.l <= JL.getDebugLevel())
                     {
-                        this.clog(msg);
+                        this.cdebug(msg);
                     } else if (li.l <= JL.getInfoLevel())
                     {
                         this.cinfo(msg);
