@@ -35,7 +35,7 @@ function JL(loggerName?: string): JSNLogLogger
             // accumulatedLoggerName evaluates false ('' is falsy) in first iteration when prev is the root logger.
             // accumulatedLoggerName will be the logger name corresponding with the logger in currentLogger.
             // Keep in mind that the currentLogger may not be defined yet, so can't get the name from
-            // the currentLogger object itself.
+            // the currentLogger object itself. 
             if (accumulatedLoggerName)
             {
                 accumulatedLoggerName += '.' + curr;
@@ -188,6 +188,33 @@ module JL
     export function getErrorLevel(): number { return 5000; }
     export function getFatalLevel(): number { return 6000; }
     export function getOffLevel(): number { return 2147483647; }
+
+    // ---------------------
+
+    export class Exception
+    {
+        public name: string;
+
+        // name, message: same as Error (standard exceptions are based on Error)
+        // data, inner are additional payloads.
+        // data: Additional data (normally a JSON object). Can be null or undefined.
+        // inner: inner exception. Can be null or undefined. 
+        constructor(name: string, public message: string,
+            public data: any, public inner: any)
+        {
+            this.name = name || "Exception";
+        }
+    }
+
+    // Derive Exception from Error (a Host object), so browsers
+    // are more likely to produce a stack trace for it in their console.
+    //
+    // Note that instanceof against an object created with this constructor
+    // will return true in these cases:
+    // <object> instanceof JL.Exception);
+    // <object> instanceof Error);
+
+    Exception.prototype = <any>new Error();
 
     // ---------------------
 
@@ -567,17 +594,54 @@ module JL
             return this;
         }
 
-        public log(level: number, logObject: any): JSNLogLogger
+        // Turns an exception into an object that can be sent to the server.
+        private buildExceptionObject(e: any): any
+        {
+            var excObject: any = {};
+
+            if (e.stack) { excObject.stack = e.stack; } else { excObject.e = e; }
+            if (e.message) { excObject.message = e.message; }
+            if (e.name) { excObject.name = e.name; }
+            if (e.data) { excObject.data = e.data; }
+            if (e.inner) { excObject.inner = this.buildExceptionObject(e.inner); }
+
+            return excObject;
+        }
+
+        // Logs a log item.
+        // Parameter e contains an exception (or null or undefined).
+        //
+        // Reason that processing exceptions is done at this low level is that
+        // 1) no need to spend the cpu cycles if the logger is switched off
+        // 2) fatalException takes both a logObject and an exception, and the logObject
+        //    may be a function that should only be executed if the logger is switched on.
+        //
+        // If an exception is passed in, the contents of logObject is attached to the exception
+        // object in a new property logData.
+        // The resulting exception object is than worked into a message to the server.
+        //
+        // If there is no exception, logObject itself is worked into the message to the server.
+        public log(level: number, logObject: any, e?: any): JSNLogLogger
         {
             var i: number = 0;
             var message: string;
+            var excObject: any;
 
             // If we can't find any appenders, do nothing
             if (!this.appenders) { return this; }
 
             if (((level >= this.level)) && allow(this))
             {
+                // logObject could be a function, so process independently from the exception.
                 message = this.stringifyLogObject(logObject);
+
+                if (e) 
+                {
+                    excObject = this.buildExceptionObject(e);
+                    excObject.logData = message;
+
+                    message = JSON.stringify(excObject);
+                }
 
                 if (allowMessage(this, message))
                 {
@@ -623,6 +687,7 @@ module JL
         public warn(logObject: any): JSNLogLogger { return this.log(getWarnLevel(), logObject); }
         public error(logObject: any): JSNLogLogger { return this.log(getErrorLevel(), logObject); }
         public fatal(logObject: any): JSNLogLogger { return this.log(getFatalLevel(), logObject); }
+        public fatalException(logObject: any, e: any): JSNLogLogger { return this.log(getFatalLevel(), logObject, e); }
     }
 
     // -----------------------

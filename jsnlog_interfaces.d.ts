@@ -54,7 +54,8 @@ interface JSNLogLogger {
     warn(logObject: any): JSNLogLogger;
     error(logObject: any): JSNLogLogger;
     fatal(logObject: any): JSNLogLogger;
-    log(level: number, logObject: any): JSNLogLogger;
+    fatalException(logObject: any, e: any): JSNLogLogger;
+    log(level: number, logObject: any, e?: any): JSNLogLogger;
 }
 
 interface JSNLogAppender {

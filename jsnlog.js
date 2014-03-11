@@ -1,4 +1,4 @@
-﻿/// <reference path="jsnlog_interfaces.d.ts"/>
+/// <reference path="jsnlog_interfaces.d.ts"/>
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -204,6 +204,31 @@ var JL;
         return 2147483647;
     }
     JL.getOffLevel = getOffLevel;
+
+    // ---------------------
+    var Exception = (function () {
+        // name, message: same as Error (standard exceptions are based on Error)
+        // data, inner are additional payloads.
+        // data: Additional data (normally a JSON object). Can be null or undefined.
+        // inner: inner exception. Can be null or undefined.
+        function Exception(name, message, data, inner) {
+            this.message = message;
+            this.data = data;
+            this.inner = inner;
+            this.name = name || "Exception";
+        }
+        return Exception;
+    })();
+    JL.Exception = Exception;
+
+    // Derive Exception from Error (a Host object), so browsers
+    // are more likely to produce a stack trace for it in their console.
+    //
+    // Note that instanceof against an object created with this constructor
+    // will return true in these cases:
+    // <object> instanceof JL.Exception);
+    // <object> instanceof Error);
+    Exception.prototype = new Error();
 
     // ---------------------
     var LogItem = (function () {
@@ -508,9 +533,48 @@ var JL;
             return this;
         };
 
-        Logger.prototype.log = function (level, logObject) {
+        // Turns an exception into an object that can be sent to the server.
+        Logger.prototype.buildExceptionObject = function (e) {
+            var excObject = {};
+
+            if (e.stack) {
+                excObject.stack = e.stack;
+            } else {
+                excObject.e = e;
+            }
+            if (e.message) {
+                excObject.message = e.message;
+            }
+            if (e.name) {
+                excObject.name = e.name;
+            }
+            if (e.data) {
+                excObject.data = e.data;
+            }
+            if (e.inner) {
+                excObject.inner = this.buildExceptionObject(e.inner);
+            }
+
+            return excObject;
+        };
+
+        // Logs a log item.
+        // Parameter e contains an exception (or null or undefined).
+        //
+        // Reason that processing exceptions is done at this low level is that
+        // 1) no need to spend the cpu cycles if the logger is switched off
+        // 2) fatalException takes both a logObject and an exception, and the logObject
+        //    may be a function that should only be executed if the logger is switched on.
+        //
+        // If an exception is passed in, the contents of logObject is attached to the exception
+        // object in a new property logData.
+        // The resulting exception object is than worked into a message to the server.
+        //
+        // If there is no exception, logObject itself is worked into the message to the server.
+        Logger.prototype.log = function (level, logObject, e) {
             var i = 0;
             var message;
+            var excObject;
 
             // If we can't find any appenders, do nothing
             if (!this.appenders) {
@@ -518,7 +582,15 @@ var JL;
             }
 
             if (((level >= this.level)) && allow(this)) {
+                // logObject could be a function, so process independently from the exception.
                 message = this.stringifyLogObject(logObject);
+
+                if (e) {
+                    excObject = this.buildExceptionObject(e);
+                    excObject.logData = message;
+
+                    message = JSON.stringify(excObject);
+                }
 
                 if (allowMessage(this, message)) {
                     // See whether message is a duplicate
@@ -566,6 +638,9 @@ var JL;
         };
         Logger.prototype.fatal = function (logObject) {
             return this.log(getFatalLevel(), logObject);
+        };
+        Logger.prototype.fatalException = function (logObject, e) {
+            return this.log(getFatalLevel(), logObject, e);
         };
         return Logger;
     })();
