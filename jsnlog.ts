@@ -171,6 +171,46 @@ module JL
         return true;
     }
 
+    function stringifyLogObject(logObject: any): string
+    {
+        // Note that this works if logObject is null.
+        // typeof null is object.
+        // JSON.stringify(null) returns "null".
+
+        switch (typeof logObject)
+        {
+            case "string":
+                return logObject;
+            case "number":
+                return logObject.toString();
+            case "boolean":
+                return logObject.toString();
+            case "undefined":
+                return "undefined";
+            case "function":
+                if (logObject instanceof RegExp)
+                {
+                    return logObject.toString();
+                } else
+                {
+                    return stringifyLogObject(logObject());
+                }
+            case "object":
+                if ((logObject instanceof RegExp) ||
+                    (logObject instanceof String) ||
+                    (logObject instanceof Number) ||
+                    (logObject instanceof Boolean))
+                {
+                    return logObject.toString();
+                } else
+                {
+                    return JSON.stringify(logObject);
+                }
+            default:
+                return "unknown";
+        }
+    }
+
     export function setOptions(options: JSNLogOptions): JSNLogStatic
     {
         copyProperty("enabled", options, this);
@@ -194,15 +234,16 @@ module JL
     export class Exception
     {
         public name: string;
+        public message: string;
 
-        // message: same as Error (standard exceptions are based on Error)
-        // data, inner are additional payloads.
-        // data: Additional data (normally a JSON object). Can be null or undefined.
+        // data replaces message. It takes not just strings, but also objects and functions, just like the log function.
+        // internally, the string representation is stored in the message property (inherited from Error)
+        //
         // inner: inner exception. Can be null or undefined. 
-        constructor(public message: string,
-            public data: any, public inner: any)
+        constructor(data: any, public inner: any)
         {
             this.name = "JL.Exception";
+            this.message = stringifyLogObject(data);
         }
     }
 
@@ -543,42 +584,6 @@ module JL
             this.seenRegexes = [];
         }
 
-        private stringifyLogObject(logObject: any): string
-        {
-            switch (typeof logObject)
-            {
-                case "string":
-                    return logObject;
-                case "number":
-                    return logObject.toString();
-                case "boolean":
-                    return logObject.toString();
-                case "undefined":
-                    return "undefined";
-                case "function":
-                    if (logObject instanceof RegExp)
-                    {
-                        return logObject.toString();
-                    } else
-                    {
-                        return this.stringifyLogObject(logObject());
-                    }
-                case "object":
-                    if ((logObject instanceof RegExp) ||
-                        (logObject instanceof String) ||
-                        (logObject instanceof Number) ||
-                        (logObject instanceof Boolean))
-                    {
-                        return logObject.toString();
-                    } else
-                    {
-                        return JSON.stringify(logObject);
-                    }
-                default:
-                    return "unknown";
-            }
-        }
-
         public setOptions(options: JSNLogLoggerOptions): JSNLogLogger
         {
             copyProperty("level", options, this);
@@ -633,7 +638,7 @@ module JL
             if (((level >= this.level)) && allow(this))
             {
                 // logObject could be a function, so process independently from the exception.
-                message = this.stringifyLogObject(logObject);
+                message = stringifyLogObject(logObject);
 
                 if (e) 
                 {

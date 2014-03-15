@@ -163,6 +163,33 @@ var JL;
         return true;
     }
 
+    function stringifyLogObject(logObject) {
+        switch (typeof logObject) {
+            case "string":
+                return logObject;
+            case "number":
+                return logObject.toString();
+            case "boolean":
+                return logObject.toString();
+            case "undefined":
+                return "undefined";
+            case "function":
+                if (logObject instanceof RegExp) {
+                    return logObject.toString();
+                } else {
+                    return stringifyLogObject(logObject());
+                }
+            case "object":
+                if ((logObject instanceof RegExp) || (logObject instanceof String) || (logObject instanceof Number) || (logObject instanceof Boolean)) {
+                    return logObject.toString();
+                } else {
+                    return JSON.stringify(logObject);
+                }
+            default:
+                return "unknown";
+        }
+    }
+
     function setOptions(options) {
         copyProperty("enabled", options, this);
         copyProperty("maxMessages", options, this);
@@ -207,15 +234,14 @@ var JL;
 
     // ---------------------
     var Exception = (function () {
-        // message: same as Error (standard exceptions are based on Error)
-        // data, inner are additional payloads.
-        // data: Additional data (normally a JSON object). Can be null or undefined.
+        // data replaces message. It takes not just strings, but also objects and functions, just like the log function.
+        // internally, the string representation is stored in the message property (inherited from Error)
+        //
         // inner: inner exception. Can be null or undefined.
-        function Exception(message, data, inner) {
-            this.message = message;
-            this.data = data;
+        function Exception(data, inner) {
             this.inner = inner;
             this.name = "JL.Exception";
+            this.message = stringifyLogObject(data);
         }
         return Exception;
     })();
@@ -492,33 +518,6 @@ var JL;
             // of its parent via the prototype chain.
             this.seenRegexes = [];
         }
-        Logger.prototype.stringifyLogObject = function (logObject) {
-            switch (typeof logObject) {
-                case "string":
-                    return logObject;
-                case "number":
-                    return logObject.toString();
-                case "boolean":
-                    return logObject.toString();
-                case "undefined":
-                    return "undefined";
-                case "function":
-                    if (logObject instanceof RegExp) {
-                        return logObject.toString();
-                    } else {
-                        return this.stringifyLogObject(logObject());
-                    }
-                case "object":
-                    if ((logObject instanceof RegExp) || (logObject instanceof String) || (logObject instanceof Number) || (logObject instanceof Boolean)) {
-                        return logObject.toString();
-                    } else {
-                        return JSON.stringify(logObject);
-                    }
-                default:
-                    return "unknown";
-            }
-        };
-
         Logger.prototype.setOptions = function (options) {
             copyProperty("level", options, this);
             copyProperty("userAgentRegex", options, this);
@@ -583,7 +582,7 @@ var JL;
 
             if (((level >= this.level)) && allow(this)) {
                 // logObject could be a function, so process independently from the exception.
-                message = this.stringifyLogObject(logObject);
+                message = stringifyLogObject(logObject);
 
                 if (e) {
                     excObject = this.buildExceptionObject(e);
