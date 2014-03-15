@@ -195,14 +195,14 @@ module JL
     {
         public name: string;
 
-        // name, message: same as Error (standard exceptions are based on Error)
+        // message: same as Error (standard exceptions are based on Error)
         // data, inner are additional payloads.
         // data: Additional data (normally a JSON object). Can be null or undefined.
         // inner: inner exception. Can be null or undefined. 
-        constructor(name: string, public message: string,
+        constructor(public message: string,
             public data: any, public inner: any)
         {
-            this.name = name || "Exception";
+            this.name = "JL.Exception";
         }
     }
 

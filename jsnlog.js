@@ -207,15 +207,15 @@ var JL;
 
     // ---------------------
     var Exception = (function () {
-        // name, message: same as Error (standard exceptions are based on Error)
+        // message: same as Error (standard exceptions are based on Error)
         // data, inner are additional payloads.
         // data: Additional data (normally a JSON object). Can be null or undefined.
         // inner: inner exception. Can be null or undefined.
-        function Exception(name, message, data, inner) {
+        function Exception(message, data, inner) {
             this.message = message;
             this.data = data;
             this.inner = inner;
-            this.name = name || "Exception";
+            this.name = "JL.Exception";
         }
         return Exception;
     })();
