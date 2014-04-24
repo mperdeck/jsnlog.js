@@ -76,7 +76,16 @@ module JL
     export var enabled: boolean;
     export var maxMessages: number;
     export var clientIP: string;
-    export var requestId: string;
+
+    // Initialise requestId to empty string. If you don't do this and the user
+    // does not set it via setOptions, then the JSNLog-RequestId header will
+    // have value "undefined", which doesn't look good in a log.
+    //
+    // Note that you always want to send a requestId as part of log requests,
+    // otherwise the server side component doesn't know this is a log request
+    // and may create a new request id for the log request, causing confusion
+    // in the log.
+    export var requestId: string = '';
 
     /**
     Copies the value of a property from one object to the other.
@@ -432,6 +441,23 @@ module JL
         {
             // JSON.stringify is only supported on IE8+
             // Use try-catch in case we get an exception here.
+            //
+            // The "r" field is now obsolete. When writing a server side component, 
+            // read the HTTP header "JSNLog-RequestId"
+            // to get the request id.
+            //
+            // The .Net server side component
+            // now uses the JSNLog-RequestId HTTP Header, because this allows it to
+            // detect whether the incoming request has a request id.
+            // If the request id were in the json payload, it would have to read the json
+            // from the stream, interfering with normal non-logging requests.
+            //
+            // It needs this ability, so users of NLog can set a requestId variable in NLog
+            // before the server side component tries to log the client side log message
+            // through an NLog logger.
+            // Unlike Log4Net, NLog doesn't allow you to register an object whose ToString()
+            // is only called when it tries to log something, so the requestId has to be 
+            // determined right at the start of request processing.
             try
             {
                 var json: string = JSON.stringify({
@@ -447,6 +473,7 @@ module JL
                 xhr.open('POST', this.url);
 
                 xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.setRequestHeader('JSNLog-RequestId', JL.requestId);
                 xhr.send(json);
             } catch (e) { }
         }
