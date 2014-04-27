@@ -83,5 +83,5 @@ interface JSNLogStatic {
     getFatalLevel(): number;
 }
 
-
+declare function __jsnlog_configure();
 

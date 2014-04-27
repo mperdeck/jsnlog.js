@@ -655,6 +655,16 @@ var JL;
     })();
     JL.Logger = Logger;
 
+    function createAjaxAppender(appenderName) {
+        return new AjaxAppender(appenderName);
+    }
+    JL.createAjaxAppender = createAjaxAppender;
+
+    function createConsoleAppender(appenderName) {
+        return new ConsoleAppender(appenderName);
+    }
+    JL.createConsoleAppender = createConsoleAppender;
+
     // -----------------------
     var defaultAppender = new AjaxAppender("");
 
@@ -670,16 +680,6 @@ var JL;
         level: JL.getDebugLevel(),
         appenders: [defaultAppender]
     });
-
-    function createAjaxAppender(appenderName) {
-        return new AjaxAppender(appenderName);
-    }
-    JL.createAjaxAppender = createAjaxAppender;
-
-    function createConsoleAppender(appenderName) {
-        return new ConsoleAppender(appenderName);
-    }
-    JL.createConsoleAppender = createConsoleAppender;
 })(JL || (JL = {}));
 
 // Support CommonJS module format
@@ -694,5 +694,13 @@ if (typeof define == 'function' && define.amd) {
     define(function () {
         return JL;
     });
+}
+
+// If the __jsnlog_configure global function has been
+// created, call it now. This allows you to create a global function
+// setting logger options etc. inline in the page before jsnlog.js
+// has been loaded.
+if (typeof __jsnlog_configure == 'function') {
+    __jsnlog_configure();
 }
 //# sourceMappingURL=jsnlog.js.map
