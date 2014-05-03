@@ -8,7 +8,7 @@ Details and documentation:
 [js.jsnlog.com](http://www.jsnlog.com)
 
 License:
-Apache License, Version 2.0
+[Apache License, Version 2.0](https://raw.githubusercontent.com/mperdeck/jsnlog.js/master/License)
 
 # Integrate with server side logging
 
