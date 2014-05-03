@@ -8,7 +8,7 @@ Details and documentation:
 [js.jsnlog.com](http://www.jsnlog.com)
 
 License:
-[Apache License, Version 2.0](http://www.jsnlog.com)
+Apache License, Version 2.0
 
 # Integrate with server side logging
 
