@@ -452,6 +452,9 @@ module JL
             // If the request id were in the json payload, it would have to read the json
             // from the stream, interfering with normal non-logging requests.
             //
+            // To see what characters you can use in the HTTP header, visit:
+            // http://stackoverflow.com/questions/3561381/custom-http-headers-naming-conventions/3561399#3561399
+            //
             // It needs this ability, so users of NLog can set a requestId variable in NLog
             // before the server side component tries to log the client side log message
             // through an NLog logger.
