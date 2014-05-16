@@ -75,6 +75,7 @@ module JL
 
     export var enabled: boolean;
     export var maxMessages: number;
+    export var defaultAjaxUrl: string;
     export var clientIP: string;
 
     // Initialise requestId to empty string. If you don't do this and the user
@@ -224,6 +225,7 @@ module JL
     {
         copyProperty("enabled", options, this);
         copyProperty("maxMessages", options, this);
+        copyProperty("defaultAjaxUrl", options, this);
         copyProperty("clientIP", options, this);
         copyProperty("requestId", options, this);
         return this;
@@ -428,7 +430,7 @@ module JL
 
     export class AjaxAppender extends Appender implements JSNLogAjaxAppender
     {
-        private url: string = "/jsnlog.logger";
+        private url: string;
 
         public setOptions(options: JSNLogAjaxAppenderOptions): JSNLogAjaxAppender
         {
@@ -463,6 +465,26 @@ module JL
             // determined right at the start of request processing.
             try
             {
+                // Only determine the url right before you send a log request.
+                // Do not set the url when constructing the appender.
+                //
+                // This is because the server side component sets defaultAjaxUrl
+                // in a call to setOptions, AFTER the JL object and the default appender
+                // have been created. 
+
+                var ajaxUrl: string = "/jsnlog.logger";
+
+                // This evaluates to true if defaultAjaxUrl is null or undefined
+                if (!(JL.defaultAjaxUrl == null))
+                {
+                    ajaxUrl = JL.defaultAjaxUrl;
+                }
+
+                if (this.url)
+                {
+                    ajaxUrl = this.url;
+                }
+
                 var json: string = JSON.stringify({
                     r: JL.requestId,
                     lg: logItems
@@ -473,7 +495,7 @@ module JL
                 // successful, nothing can be done about it.
 
                 var xhr = new XMLHttpRequest();
-                xhr.open('POST', this.url);
+                xhr.open('POST', ajaxUrl);
 
                 xhr.setRequestHeader('Content-Type', 'application/json');
                 xhr.setRequestHeader('JSNLog-RequestId', JL.requestId);

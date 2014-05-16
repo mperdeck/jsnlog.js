@@ -17,6 +17,7 @@
 interface JSNLogOptions {
     enabled?: boolean;
     maxMessages?: number;
+    defaultAjaxUrl?: string;
     clientIP?: string;
     requestId?: string;
 }
