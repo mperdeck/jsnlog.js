@@ -789,7 +789,9 @@ if (typeof exports !== 'undefined')
 var define: any;
 if (typeof define == 'function' && define.amd)
 {
-    define(function () { return JL; });
+    define('jsnlog', [], function () {
+        return JL;
+    });
 }
 
 // If the __jsnlog_configure global function has been
