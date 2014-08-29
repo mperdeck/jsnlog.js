@@ -181,43 +181,82 @@ module JL
         return true;
     }
 
-    function stringifyLogObject(logObject: any): string
+    // If logObject is a function, the function is evaluated (without parameters)
+    // and the result returned.
+    // Otherwise, logObject itself is returned.
+    function stringifyLogObjectFunction(logObject: any): any
+    {
+        if (typeof logObject == "function") 
+        {
+            if (logObject instanceof RegExp)
+            {
+                return logObject.toString();
+            }
+            else
+            {
+                return logObject();
+            }
+        }
+
+        return logObject;
+    }
+
+    // Takes a logObject, which can be 
+    // * a scalar
+    // * an object
+    // * a parameterless function, which returns the scalar or object to log.
+    // Returns an object with these fields:
+    // * msg - 
+    //      if the logObject is a scalar (after possible function evaluation), this is set to
+    //      string representing the scalar. Otherwise it is left undefined.
+    // * meta -
+    //      if the logObject is an object (after possible function evaluation), this is set to
+    //      that object. Otherwise it is left undefined.
+    // * final -
+    //      This is set to the string representation of logObject (after possible function evaluation),
+    //      regardless of whether it is an scalar or an object. An object is stringified to a JSON string.
+    function stringifyLogObject(logObject: any): { msg?: string, meta?: any, final?: string }
     {
         // Note that this works if logObject is null.
         // typeof null is object.
         // JSON.stringify(null) returns "null".
 
-        switch (typeof logObject)
+        var actualLogObject = stringifyLogObjectFunction(logObject);
+        var finalString;
+
+        // Note that typeof actualLogObject should not be "function", because that has 
+        // been resolved with stringifyLogObjectFunction.
+
+        switch (typeof actualLogObject)
         {
             case "string":
-                return logObject;
+                return { msg: actualLogObject, final: actualLogObject };
             case "number":
-                return logObject.toString();
+                finalString = actualLogObject.toString(); 
+                return { msg: finalString, final: finalString };
             case "boolean":
-                return logObject.toString();
+                finalString = actualLogObject.toString(); 
+                return { msg: finalString, final: finalString };
             case "undefined":
-                return "undefined";
-            case "function":
-                if (logObject instanceof RegExp)
-                {
-                    return logObject.toString();
-                } else
-                {
-                    return stringifyLogObject(logObject());
-                }
+                return { msg: "undefined" };
             case "object":
-                if ((logObject instanceof RegExp) ||
-                    (logObject instanceof String) ||
-                    (logObject instanceof Number) ||
-                    (logObject instanceof Boolean))
+                if ((actualLogObject instanceof RegExp) ||
+                    (actualLogObject instanceof String) ||
+                    (actualLogObject instanceof Number) ||
+                    (actualLogObject instanceof Boolean))
                 {
-                    return logObject.toString();
-                } else
+                    finalString = actualLogObject.toString();
+                    return { msg: finalString, final: finalString };
+                }
+                else
                 {
-                    return JSON.stringify(logObject);
+                    return {
+                        meta: actualLogObject,
+                        final: JSON.stringify(actualLogObject)
+                    }
                 }
             default:
-                return "unknown";
+                return { msg: "unknown", final: "unknown" };
         }
     }
 
@@ -240,6 +279,16 @@ module JL
     export function getFatalLevel(): number { return 6000; }
     export function getOffLevel(): number { return 2147483647; }
 
+    function levelToString(level: number): string
+    {
+        if (level <= 1000) { return "trace"; }
+        if (level <= 2000) { return "debug"; }
+        if (level <= 3000) { return "info"; }
+        if (level <= 4000) { return "warn"; }
+        if (level <= 5000) { return "error"; }
+        return "fatal";
+    }
+
     // ---------------------
 
     export class Exception
@@ -254,7 +303,7 @@ module JL
         constructor(data: any, public inner: any)
         {
             this.name = "JL.Exception";
-            this.message = stringifyLogObject(data);
+            this.message = stringifyLogObject(data).final;
         }
     }
 
@@ -341,23 +390,37 @@ module JL
         If in response to this call one or more log items need to be processed
         (eg., sent to the server), this method calls this.sendLogItems
         with an array with all items to be processed.
+
+        Note that the name and parameters of this function must match those of the log function of
+        a Winston transport object, so that users can use these transports as appenders.
+        That is why there are many parameters that are not actually used by this function.
+
+        level - string with the level ("trace", "debug", etc.) Only used by Winston transports.
+        msg - human readable message. Undefined if the log item is an object. Only used by Winston transports.
+        meta - log object. Always defined, because at least it contains the logger name. Only used by Winston transports.
+        callback - function that is called when the log item has been logged. Only used by Winston transports.
+        levelNbr - level as a number. Not used by Winston transports.
+        message - log item. If the user logged an object, this is the JSON string.  Not used by Winston transports.
+        loggerName: name of the logger.  Not used by Winston transports.
         */
-        public log(level: number, message: string, loggerName: string): void
+        public log(
+            level: string, msg: string, meta: any, callback: () => void,
+            levelNbr: number, message: string, loggerName: string): void
         {
             var logItem: LogItem;
 
             if (!allow(this)) { return; }
             if (!allowMessage(this, message)) { return; }
 
-            if (level < this.storeInBufferLevel)
+            if (levelNbr < this.storeInBufferLevel)
             {
                 // Ignore the log item completely
                 return;
             }
 
-            logItem = new LogItem(level, message, loggerName, (new Date).getTime());
+            logItem = new LogItem(levelNbr, message, loggerName, (new Date).getTime());
 
-            if (level < this.level)
+            if (levelNbr < this.level)
             {
                 // Store in the hold buffer. Do not send.
                 if (this.bufferSize > 0)
@@ -374,7 +437,7 @@ module JL
                 return;
             }
 
-            if (level < this.sendWithBufferLevel)
+            if (levelNbr < this.sendWithBufferLevel)
             {
                 // Want to send the item, but not the contents of the buffer
                 this.batchBuffer.push(logItem);
@@ -681,7 +744,7 @@ module JL
         public log(level: number, logObject: any, e?: any): JSNLogLogger
         {
             var i: number = 0;
-            var message: string;
+            var compositeMessage: { msg?: string, meta?: any, final?: string };
             var excObject: any;
 
             // If we can't find any appenders, do nothing
@@ -689,18 +752,19 @@ module JL
 
             if (((level >= this.level)) && allow(this))
             {
-                // logObject could be a function, so process independently from the exception.
-                message = stringifyLogObject(logObject);
-
                 if (e) 
                 {
                     excObject = this.buildExceptionObject(e);
-                    excObject.logData = message;
-
-                    message = JSON.stringify(excObject);
+                    excObject.logData = stringifyLogObjectFunction(logObject);
+                }
+                else
+                {
+                    excObject = logObject;
                 }
 
-                if (allowMessage(this, message))
+                compositeMessage = stringifyLogObject(excObject);
+
+                if (allowMessage(this, compositeMessage.final))
                 {
 
                     // See whether message is a duplicate
@@ -710,7 +774,7 @@ module JL
                         i = this.onceOnly.length - 1;
                         while (i >= 0)
                         {
-                            if (new RegExp(this.onceOnly[i]).test(message))
+                            if (new RegExp(this.onceOnly[i]).test(compositeMessage.final))
                             {
                                 if (this.seenRegexes[i])
                                 {
@@ -726,10 +790,22 @@ module JL
 
                     // Pass message to all appenders
 
+                    // Note that these appenders could be Winston transports
+                    // https://github.com/flatiron/winston
+                    //
+                    // These transports do not take the logger name as a parameter.
+                    // So add it to the meta information, so even Winston transports will
+                    // store this info.
+
+                    compositeMessage.meta = compositeMessage.meta || {};
+                    compositeMessage.meta.loggerName = this.loggerName;
+
                     i = this.appenders.length - 1;
                     while (i >= 0)
                     {
-                        this.appenders[i].log(level, message, this.loggerName);
+                        this.appenders[i].log(
+                            levelToString(level), compositeMessage.msg, compositeMessage.meta, function () { },
+                            level, compositeMessage.final, this.loggerName);
                         i--;
                     }
                 }

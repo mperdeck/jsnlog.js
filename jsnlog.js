@@ -173,30 +173,65 @@ var JL;
         return true;
     }
 
+    // If logObject is a function, the function is evaluated (without parameters)
+    // and the result returned.
+    // Otherwise, logObject itself is returned.
+    function stringifyLogObjectFunction(logObject) {
+        if (typeof logObject == "function") {
+            if (logObject instanceof RegExp) {
+                return logObject.toString();
+            } else {
+                return logObject();
+            }
+        }
+
+        return logObject;
+    }
+
+    // Takes a logObject, which can be
+    // * a scalar
+    // * an object
+    // * a parameterless function, which returns the scalar or object to log.
+    // Returns an object with these fields:
+    // * msg -
+    //      if the logObject is a scalar (after possible function evaluation), this is set to
+    //      string representing the scalar. Otherwise it is left undefined.
+    // * meta -
+    //      if the logObject is an object (after possible function evaluation), this is set to
+    //      that object. Otherwise it is left undefined.
+    // * final -
+    //      This is set to the string representation of logObject (after possible function evaluation),
+    //      regardless of whether it is an scalar or an object. An object is stringified to a JSON string.
     function stringifyLogObject(logObject) {
-        switch (typeof logObject) {
+        // Note that this works if logObject is null.
+        // typeof null is object.
+        // JSON.stringify(null) returns "null".
+        var actualLogObject = stringifyLogObjectFunction(logObject);
+        var finalString;
+
+        switch (typeof actualLogObject) {
             case "string":
-                return logObject;
+                return { msg: actualLogObject, final: actualLogObject };
             case "number":
-                return logObject.toString();
+                finalString = actualLogObject.toString();
+                return { msg: finalString, final: finalString };
             case "boolean":
-                return logObject.toString();
+                finalString = actualLogObject.toString();
+                return { msg: finalString, final: finalString };
             case "undefined":
-                return "undefined";
-            case "function":
-                if (logObject instanceof RegExp) {
-                    return logObject.toString();
-                } else {
-                    return stringifyLogObject(logObject());
-                }
+                return { msg: "undefined" };
             case "object":
-                if ((logObject instanceof RegExp) || (logObject instanceof String) || (logObject instanceof Number) || (logObject instanceof Boolean)) {
-                    return logObject.toString();
+                if ((actualLogObject instanceof RegExp) || (actualLogObject instanceof String) || (actualLogObject instanceof Number) || (actualLogObject instanceof Boolean)) {
+                    finalString = actualLogObject.toString();
+                    return { msg: finalString, final: finalString };
                 } else {
-                    return JSON.stringify(logObject);
+                    return {
+                        meta: actualLogObject,
+                        final: JSON.stringify(actualLogObject)
+                    };
                 }
             default:
-                return "unknown";
+                return { msg: "unknown", final: "unknown" };
         }
     }
 
