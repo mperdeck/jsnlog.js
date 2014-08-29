@@ -215,7 +215,7 @@ module JL
     // * final -
     //      This is set to the string representation of logObject (after possible function evaluation),
     //      regardless of whether it is an scalar or an object. An object is stringified to a JSON string.
-    function stringifyLogObject(logObject: any): { msg?: string, meta?: any, final?: string }
+    function stringifyLogObject(logObject: any): { msg?: string; meta?: any; final?: string }
     {
         // Note that this works if logObject is null.
         // typeof null is object.
@@ -744,7 +744,7 @@ module JL
         public log(level: number, logObject: any, e?: any): JSNLogLogger
         {
             var i: number = 0;
-            var compositeMessage: { msg?: string, meta?: any, final?: string };
+            var compositeMessage: { msg?: string; meta?: any; final?: string };
             var excObject: any;
 
             // If we can't find any appenders, do nothing
@@ -834,8 +834,14 @@ module JL
     }
 
     // -----------------------
+    // In the browser, the default appender is the AjaxAppender.
+    // Under nodejs (where there is no "window"), use the ConsoleAppender instead.
 
-    var defaultAppender = new AjaxAppender("");
+    var defaultAppender: Appender = new AjaxAppender("");
+    if (typeof window === 'undefined')
+    {
+        defaultAppender = new ConsoleAppender("");
+    }
 
     // Create root logger
     //

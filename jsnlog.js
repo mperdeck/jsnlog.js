@@ -278,6 +278,25 @@ var JL;
     }
     JL.getOffLevel = getOffLevel;
 
+    function levelToString(level) {
+        if (level <= 1000) {
+            return "trace";
+        }
+        if (level <= 2000) {
+            return "debug";
+        }
+        if (level <= 3000) {
+            return "info";
+        }
+        if (level <= 4000) {
+            return "warn";
+        }
+        if (level <= 5000) {
+            return "error";
+        }
+        return "fatal";
+    }
+
     // ---------------------
     var Exception = (function () {
         // data replaces message. It takes not just strings, but also objects and functions, just like the log function.
@@ -287,7 +306,7 @@ var JL;
         function Exception(data, inner) {
             this.inner = inner;
             this.name = "JL.Exception";
-            this.message = stringifyLogObject(data);
+            this.message = stringifyLogObject(data).final;
         }
         return Exception;
     })();
@@ -367,8 +386,20 @@ var JL;
         If in response to this call one or more log items need to be processed
         (eg., sent to the server), this method calls this.sendLogItems
         with an array with all items to be processed.
+        
+        Note that the name and parameters of this function must match those of the log function of
+        a Winston transport object, so that users can use these transports as appenders.
+        That is why there are many parameters that are not actually used by this function.
+        
+        level - string with the level ("trace", "debug", etc.) Only used by Winston transports.
+        msg - human readable message. Undefined if the log item is an object. Only used by Winston transports.
+        meta - log object. Always defined, because at least it contains the logger name. Only used by Winston transports.
+        callback - function that is called when the log item has been logged. Only used by Winston transports.
+        levelNbr - level as a number. Not used by Winston transports.
+        message - log item. If the user logged an object, this is the JSON string.  Not used by Winston transports.
+        loggerName: name of the logger.  Not used by Winston transports.
         */
-        Appender.prototype.log = function (level, message, loggerName) {
+        Appender.prototype.log = function (level, msg, meta, callback, levelNbr, message, loggerName) {
             var logItem;
 
             if (!allow(this)) {
@@ -378,14 +409,14 @@ var JL;
                 return;
             }
 
-            if (level < this.storeInBufferLevel) {
+            if (levelNbr < this.storeInBufferLevel) {
                 // Ignore the log item completely
                 return;
             }
 
-            logItem = new LogItem(level, message, loggerName, (new Date).getTime());
+            logItem = new LogItem(levelNbr, message, loggerName, (new Date).getTime());
 
-            if (level < this.level) {
+            if (levelNbr < this.level) {
                 // Store in the hold buffer. Do not send.
                 if (this.bufferSize > 0) {
                     this.buffer.push(logItem);
@@ -399,7 +430,7 @@ var JL;
                 return;
             }
 
-            if (level < this.sendWithBufferLevel) {
+            if (levelNbr < this.sendWithBufferLevel) {
                 // Want to send the item, but not the contents of the buffer
                 this.batchBuffer.push(logItem);
             } else {
@@ -635,7 +666,7 @@ var JL;
         // If there is no exception, logObject itself is worked into the message to the server.
         Logger.prototype.log = function (level, logObject, e) {
             var i = 0;
-            var message;
+            var compositeMessage;
             var excObject;
 
             // If we can't find any appenders, do nothing
@@ -644,22 +675,21 @@ var JL;
             }
 
             if (((level >= this.level)) && allow(this)) {
-                // logObject could be a function, so process independently from the exception.
-                message = stringifyLogObject(logObject);
-
                 if (e) {
                     excObject = this.buildExceptionObject(e);
-                    excObject.logData = message;
-
-                    message = JSON.stringify(excObject);
+                    excObject.logData = stringifyLogObjectFunction(logObject);
+                } else {
+                    excObject = logObject;
                 }
 
-                if (allowMessage(this, message)) {
+                compositeMessage = stringifyLogObject(excObject);
+
+                if (allowMessage(this, compositeMessage.final)) {
                     // See whether message is a duplicate
                     if (this.onceOnly) {
                         i = this.onceOnly.length - 1;
                         while (i >= 0) {
-                            if (new RegExp(this.onceOnly[i]).test(message)) {
+                            if (new RegExp(this.onceOnly[i]).test(compositeMessage.final)) {
                                 if (this.seenRegexes[i]) {
                                     return this;
                                 }
@@ -672,9 +702,19 @@ var JL;
                     }
 
                     // Pass message to all appenders
+                    // Note that these appenders could be Winston transports
+                    // https://github.com/flatiron/winston
+                    //
+                    // These transports do not take the logger name as a parameter.
+                    // So add it to the meta information, so even Winston transports will
+                    // store this info.
+                    compositeMessage.meta = compositeMessage.meta || {};
+                    compositeMessage.meta.loggerName = this.loggerName;
+
                     i = this.appenders.length - 1;
                     while (i >= 0) {
-                        this.appenders[i].log(level, message, this.loggerName);
+                        this.appenders[i].log(levelToString(level), compositeMessage.msg, compositeMessage.meta, function () {
+                        }, level, compositeMessage.final, this.loggerName);
                         i--;
                     }
                 }
@@ -719,7 +759,12 @@ var JL;
     JL.createConsoleAppender = createConsoleAppender;
 
     // -----------------------
+    // In the browser, the default appender is the AjaxAppender.
+    // Under nodejs (where there is no "window"), use the ConsoleAppender instead.
     var defaultAppender = new AjaxAppender("");
+    if (typeof window === 'undefined') {
+        defaultAppender = new ConsoleAppender("");
+    }
 
     // Create root logger
     //
