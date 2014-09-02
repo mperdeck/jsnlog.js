@@ -56,7 +56,6 @@
     <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
   </PropertyGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="file1.ts" />
     <TypeScriptCompile Include="jsnlog.ts" />
     <TypeScriptCompile Include="jsnlog_interfaces.d.ts" />
   </ItemGroup>

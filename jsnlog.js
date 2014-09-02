@@ -587,6 +587,14 @@ var JL;
                     var li = logItems[i];
                     var msg = li.n + ": " + li.m;
 
+                    // Only log the timestamp if we're on the server
+                    // (window is undefined). On the browser, the user
+                    // sees the log entry probably immediately, so in that case
+                    // the timestamp is clutter.
+                    if (typeof window === 'undefined') {
+                        msg = new Date(li.t) + " | " + msg;
+                    }
+
                     if (li.l <= JL.getDebugLevel()) {
                         this.cdebug(msg);
                     } else if (li.l <= JL.getInfoLevel()) {
