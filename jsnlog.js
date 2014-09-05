@@ -11,6 +11,19 @@ function JL(loggerName) {
         return JL.__;
     }
 
+    // Implements Array.reduce. JSNLog supports IE8+ and reduce is not supported in that browser.
+    // Same interface as the standard reduce, except that
+    if (!Array.prototype.reduce) {
+        Array.prototype.reduce = function (callback, initialValue) {
+            var previousValue = initialValue;
+            for (var i = 0; i < this.length; i++) {
+                previousValue = callback(previousValue, this[i], i, this);
+            }
+
+            return previousValue;
+        };
+    }
+
     var accumulatedLoggerName = '';
     var logger = ('.' + loggerName).split('.').reduce(function (prev, curr, idx, arr) {
         // if loggername is a.b.c, than currentLogger will be set to the loggers

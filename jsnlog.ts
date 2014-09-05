@@ -8,6 +8,22 @@ function JL(loggerName?: string): JSNLogLogger
         return JL.__;
     }
 
+    // Implements Array.reduce. JSNLog supports IE8+ and reduce is not supported in that browser.
+    // Same interface as the standard reduce, except that 
+    if (!Array.prototype.reduce)
+    {
+        Array.prototype.reduce = function (callback, initialValue)
+        {
+            var previousValue = initialValue;
+            for (var i = 0; i < this.length; i++)
+            {
+                previousValue = callback(previousValue, this[i], i, this);
+            }
+
+            return previousValue;
+        };
+    }
+
     var accumulatedLoggerName = '';
     var logger: JL.Logger = ('.' + loggerName).split('.').reduce(
         function (prev: JL.Logger, curr: string, idx: number, arr: string[])
