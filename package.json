@@ -1,7 +1,7 @@
 {
   "name": "jsnlog",
   "version": "2.7.4",
-  "description": "Simple and well documented logging package. Use on client and/or server. When used on the client, automatically sends log messages to the server where they are stored in your existing server side logs. On the server under Node.js, log to console or use Winston transports. Ideal for logging client side exceptions and AJAX timeouts to the server.",
+  "description": "Simple logging package. Use on client and/or server. On the client, sends logs to the server and stores them in your existing server side logs. On the server, log to console or use Winston transports. Ideal for logging exceptions, AJAX timeouts.",
   "main": "jsnlog.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -24,5 +24,5 @@
   "bugs": {
     "url": "https://github.com/mperdeck/jsnlog.js/issues"
   },
-  "homepage": "http://js.jsnlog.com/"
+  "homepage": "http://nodejs.jsnlog.com/"
 }
