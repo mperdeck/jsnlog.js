@@ -910,6 +910,6 @@ if (typeof define == 'function' && define.amd)
 // setting logger options etc. inline in the page before jsnlog.js
 // has been loaded.
 
-if (typeof __jsnlog_configure == 'function') { __jsnlog_configure(); }
+if (typeof __jsnlog_configure == 'function') { __jsnlog_configure(JL); }
 
 
