@@ -1,0 +1,7 @@
+src/
+test/
+typings/
+
+tsd.json
+build.sh
+run-tests.sh
