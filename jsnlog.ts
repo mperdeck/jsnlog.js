@@ -261,7 +261,7 @@ module JL
                 finalString = actualLogObject.toString(); 
                 return new StringifiedLogObject(finalString, null, finalString);
             case "undefined":
-                return new StringifiedLogObject("undefined");
+                return new StringifiedLogObject("undefined", null, "undefined");
             case "object":
                 if ((actualLogObject instanceof RegExp) ||
                     (actualLogObject instanceof String) ||
