@@ -93,6 +93,7 @@ module JL
     export var maxMessages: number;
     export var defaultAjaxUrl: string;
     export var clientIP: string;
+    export var beforeSend: any;
 
     // Initialise requestId to empty string. If you don't do this and the user
     // does not set it via setOptions, then the JSNLog-RequestId header will
@@ -287,6 +288,7 @@ module JL
         copyProperty("defaultAjaxUrl", options, this);
         copyProperty("clientIP", options, this);
         copyProperty("requestId", options, this);
+        copyProperty("beforeSend", options, this);
         return this;
     }
 
@@ -579,6 +581,11 @@ module JL
 
                 var xhr = new XMLHttpRequest();
                 xhr.open('POST', ajaxUrl);
+
+                // call beforeSend callback
+                if (typeof JL.beforeSend === 'function') {
+                  JL.beforeSend(xhr);
+                }
 
                 xhr.setRequestHeader('Content-Type', 'application/json');
                 xhr.setRequestHeader('JSNLog-RequestId', JL.requestId);
