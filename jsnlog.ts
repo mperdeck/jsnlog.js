@@ -93,7 +93,7 @@ module JL
     export var maxMessages: number;
     export var defaultAjaxUrl: string;
     export var clientIP: string;
-    export var beforeSend: any;
+    export var defaultBeforeSend: any;
 
     // Initialise requestId to empty string. If you don't do this and the user
     // does not set it via setOptions, then the JSNLog-RequestId header will
@@ -288,7 +288,7 @@ module JL
         copyProperty("defaultAjaxUrl", options, this);
         copyProperty("clientIP", options, this);
         copyProperty("requestId", options, this);
-        copyProperty("beforeSend", options, this);
+        copyProperty("defaultBeforeSend", options, this);
         return this;
     }
 
@@ -516,10 +516,12 @@ module JL
     export class AjaxAppender extends Appender implements JSNLogAjaxAppender
     {
         private url: string;
+        private beforeSend: any;
 
         public setOptions(options: JSNLogAjaxAppenderOptions): JSNLogAjaxAppender
         {
             copyProperty("url", options, this);
+            copyProperty("beforeSend", options, this);
             super.setOptions(options);
             return this;
         }
@@ -583,8 +585,14 @@ module JL
                 xhr.open('POST', ajaxUrl);
 
                 // call beforeSend callback
-                if (typeof JL.beforeSend === 'function') {
-                  JL.beforeSend(xhr);
+                // first try the callback on the appender
+                // then the global defaultBeforeSend callback
+                if (typeof this.beforeSend === 'function')
+                {
+                  this.beforeSend(xhr);
+                } else if (typeof JL.defaultBeforeSend === 'function')
+                {
+                  JL.defaultBeforeSend(xhr);
                 }
 
                 xhr.setRequestHeader('Content-Type', 'application/json');
