@@ -73,6 +73,7 @@ var JL;
     JL.maxMessages;
     JL.defaultAjaxUrl;
     JL.clientIP;
+    JL.defaultBeforeSend;
     // Initialise requestId to empty string. If you don't do this and the user
     // does not set it via setOptions, then the JSNLog-RequestId header will
     // have value "undefined", which doesn't look good in a log.
@@ -246,6 +247,7 @@ var JL;
         copyProperty("defaultAjaxUrl", options, this);
         copyProperty("clientIP", options, this);
         copyProperty("requestId", options, this);
+        copyProperty("defaultBeforeSend", options, this);
         return this;
     }
     JL.setOptions = setOptions;
@@ -467,6 +469,7 @@ var JL;
         }
         AjaxAppender.prototype.setOptions = function (options) {
             copyProperty("url", options, this);
+            copyProperty("beforeSend", options, this);
             _super.prototype.setOptions.call(this, options);
             return this;
         };
@@ -495,6 +498,15 @@ var JL;
                 // successful, nothing can be done about it.
                 var xhr = new XMLHttpRequest();
                 xhr.open('POST', ajaxUrl);
+                // call beforeSend callback
+                // first try the callback on the appender
+                // then the global defaultBeforeSend callback
+                if (typeof this.beforeSend === 'function') {
+                    this.beforeSend(xhr);
+                }
+                else if (typeof JL.defaultBeforeSend === 'function') {
+                    JL.defaultBeforeSend(xhr);
+                }
                 xhr.setRequestHeader('Content-Type', 'application/json');
                 xhr.setRequestHeader('JSNLog-RequestId', JL.requestId);
                 xhr.send(json);
