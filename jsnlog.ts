@@ -581,7 +581,7 @@ module JL
                 // Note that there is no event handling here. If the send is not
                 // successful, nothing can be done about it.
 
-                var xhr = new XMLHttpRequest();
+                var xhr = getXhr();
                 xhr.open('POST', ajaxUrl);
 
                 // call beforeSend callback
@@ -600,6 +600,37 @@ module JL
                 xhr.send(json);
             } catch (e) { }
         }
+
+		// Creates the Xhr object to use to send the log request.
+		// Sets out to create an Xhr object that can be used for CORS.
+		// However, if there seems to be no CORS support on the browser,
+		// returns a non-CORS capable Xhr.
+		private getXhr(): any
+        {
+		    var xhr = new XMLHttpRequest();
+
+			// Check whether this xhr is CORS capable by checking whether it has
+			// withCredentials. 
+			// "withCredentials" only exists on XMLHTTPRequest2 objects.
+	
+			if ("withCredentials" in xhr) {
+				return xhr;
+			}
+
+			// Just found that no XMLHttpRequest2 available.
+			// Check if XDomainRequest is available.
+			// This only exists in IE, and is IE's way of making CORS requests.
+
+			if (typeof XDomainRequest != "undefined") {
+				xhr = new XDomainRequest();
+				return xhr;
+			}
+  
+			// Nothing CORS capable is available. Just return the XMLHttpRequest
+			// we originally created, so at least non-CORS request will still go through.
+
+			return xhr;
+		}
 
         constructor(appenderName: string)
         {
