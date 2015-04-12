@@ -581,8 +581,7 @@ module JL
                 // Note that there is no event handling here. If the send is not
                 // successful, nothing can be done about it.
 
-                var xhr = getXhr();
-                xhr.open('POST', ajaxUrl);
+                var xhr = this.getXhr(ajaxUrl);
 
                 // call beforeSend callback
                 // first try the callback on the appender
@@ -595,8 +594,6 @@ module JL
                   JL.defaultBeforeSend(xhr);
                 }
 
-                xhr.setRequestHeader('Content-Type', 'application/json');
-                xhr.setRequestHeader('JSNLog-RequestId', JL.requestId);
                 xhr.send(json);
             } catch (e) { }
         }
@@ -605,7 +602,7 @@ module JL
 		// Sets out to create an Xhr object that can be used for CORS.
 		// However, if there seems to be no CORS support on the browser,
 		// returns a non-CORS capable Xhr.
-		private getXhr(): any
+		private getXhr(ajaxUrl: string): any
         {
 		    var xhr = new XMLHttpRequest();
 
@@ -613,21 +610,31 @@ module JL
 			// withCredentials. 
 			// "withCredentials" only exists on XMLHTTPRequest2 objects.
 	
-			if ("withCredentials" in xhr) {
-				return xhr;
+			if (!("withCredentials" in xhr)) {
+
+				// Just found that no XMLHttpRequest2 available.
+				// Check if XDomainRequest is available.
+				// This only exists in IE, and is IE's way of making CORS requests.
+
+				if (typeof XDomainRequest != "undefined") {
+
+					// Note that here we're not setting request headers on the XDomainRequest
+					// object. This is because this object doesn't let you do that:
+					// http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx
+					// This means that for IE8 and IE9, CORS logging requests do not carry request ids.
+
+					var xdr = new XDomainRequest();
+					xdr.open('POST', ajaxUrl);
+					return xdr;
+				}
 			}
 
-			// Just found that no XMLHttpRequest2 available.
-			// Check if XDomainRequest is available.
-			// This only exists in IE, and is IE's way of making CORS requests.
+			// At this point, we're going with XMLHttpRequest, whether it is CORS capable or not.
+			// If it is not CORS capable, at least will handle the non-CORS requests.
 
-			if (typeof XDomainRequest != "undefined") {
-				xhr = new XDomainRequest();
-				return xhr;
-			}
-  
-			// Nothing CORS capable is available. Just return the XMLHttpRequest
-			// we originally created, so at least non-CORS request will still go through.
+			xhr.open('POST', ajaxUrl);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.setRequestHeader('JSNLog-RequestId', JL.requestId);
 
 			return xhr;
 		}

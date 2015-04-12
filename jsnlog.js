@@ -529,9 +529,9 @@ var JL;
                     // object. This is because this object doesn't let you do that:
                     // http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx
                     // This means that for IE8 and IE9, CORS logging requests do not carry request ids.
-                    xhr = new XDomainRequest();
-                    xhr.open('POST', ajaxUrl);
-                    return xhr;
+                    var xdr = new XDomainRequest();
+                    xdr.open('POST', ajaxUrl);
+                    return xdr;
                 }
             }
             // At this point, we're going with XMLHttpRequest, whether it is CORS capable or not.
