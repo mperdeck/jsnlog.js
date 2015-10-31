@@ -1,5 +1,5 @@
 /**
-* Copyright 2014 Mattijs Perdeck.
+* Copyright 2015 Mattijs Perdeck.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ interface JSNLogOptions {
     defaultAjaxUrl?: string;
     clientIP?: string;
     requestId?: string;
+	defaultBeforeSend?: (xhr: XMLHttpRequest) => void;
 }
 
 interface JSNLogFilterOptions {
@@ -44,6 +45,7 @@ interface JSNLogAppenderOptions extends JSNLogFilterOptions {
 
 interface JSNLogAjaxAppenderOptions extends JSNLogAppenderOptions {
     url?: string;
+	beforeSend?: (xhr: XMLHttpRequest) => void;
 }
 
 interface JSNLogLogger {
@@ -75,6 +77,7 @@ interface JSNLogStatic {
 
     setOptions(options: JSNLogOptions): JSNLogStatic;
     createAjaxAppender(appenderName: string): JSNLogAjaxAppender;
+	createConsoleAppender(appenderName: string): JSNLogConsoleAppender;
 
     getTraceLevel(): number;
     getDebugLevel(): number;
