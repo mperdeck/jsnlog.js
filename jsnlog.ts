@@ -1,4 +1,4 @@
-/// <reference path="jsnlog_interfaces.d.ts"/>
+/// <reference path="Definitions/jsnlog_interfaces.d.ts"/>
 
 import JSNLogAppender = JSNLog.JSNLogAppender
 import JSNLogAppenderOptions = JSNLog.JSNLogAppenderOptions

@@ -1,4 +1,14 @@
-/**
+// Type definitions for JSNLog v2.11.0+
+// Project: https://github.com/mperdeck/jsnlog.js
+// Definitions by: Mattijs Perdeck <https://github.com/mperdeck>
+// Definitions: https://github.com/borisyankov/DefinitelyTyped
+
+// -------------------------------
+// Full documentation is at 
+// http://jsnlog.com
+// -------------------------------
+
+﻿/**
 * Copyright 2015 Mattijs Perdeck.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +24,9 @@
 * limitations under the License.
 */
 
-// Heading for DefinitelyTyped
-
-// Type definitions for JSNLog v2.12.0
-// Project: https://github.com/mperdeck/jsnlog.js
-// Definitions by: Mattijs Perdeck <https://github.com/mperdeck>
-// Definitions: https://github.com/borisyankov/DefinitelyTyped
+// Declarations of all interfaces and ambient objects, except for JL itself.
+// Provides strong typing in both jsnlog.ts itself and in TypeScript programs that use 
+// JSNLog. 
 
 declare module JSNLog {
 
@@ -97,4 +104,13 @@ declare module JSNLog {
 	}
 }
 
-declare function __jsnlog_configure(jsnlog: JSNLog.JSNLogStatic);
+declare function __jsnlog_configure(jsnlog: JSNLog.JSNLogStatic): void;
+
+﻿
+// Ambient declaration of the JL object itself
+
+declare var JL: JSNLog.JSNLogStatic;
+
+
+
+
