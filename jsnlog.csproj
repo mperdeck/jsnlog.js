@@ -57,7 +57,19 @@
   </PropertyGroup>
   <ItemGroup>
     <TypeScriptCompile Include="jsnlog.ts" />
-    <TypeScriptCompile Include="jsnlog_interfaces.d.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Definitions\jsnlog-tests.ts" />
+    <Content Include="Definitions\jsnlog.DefinitelyTypedHeading.txt" />
+    <Content Include="Definitions\jsnlog.DefinitelyTypedHeading.txt.template" />
+    <Content Include="Definitions\jsnlog.jl.d.ts" />
+    <Content Include="Definitions\jsnlog_interfaces.d.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Definitions\generate.bat" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="minify.bat" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets')" />
 </Project>
