@@ -16,7 +16,7 @@
   "keywords": ["logging", "debugging",	"dev", "development"],
   "dependencies": {},
   "development": {},
-  "license": "Apache-2.0",
+  "license": "MIT",
   "scripts": [
     "jsnlog.js"
   ]
