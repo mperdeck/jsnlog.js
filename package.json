@@ -24,5 +24,15 @@
   "bugs": {
     "url": "https://github.com/mperdeck/jsnlog.js/issues"
   },
-  "homepage": "http://nodejs.jsnlog.com/"
+  "homepage": "http://nodejs.jsnlog.com/",
+  "autoupdate": {
+    "source": "git",
+    "target": "https://github.com/mperdeck/jsnlog.js.git",
+    "basePath": "",
+    "files": [
+      "jsnlog.min.js",
+      "jsnlog.js.map",
+      "jsnlog.js"
+    ]
+  }
 }
