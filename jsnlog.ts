@@ -599,10 +599,10 @@ module JL
                 // then the global defaultBeforeSend callback
                 if (typeof this.beforeSend === 'function')
                 {
-                  this.beforeSend(xhr);
+                  this.beforeSend.call(this, xhr);
                 } else if (typeof JL.defaultBeforeSend === 'function')
                 {
-                  JL.defaultBeforeSend(xhr);
+                  JL.defaultBeforeSend.call(this, xhr);
                 }
 
                 xhr.send(json);
