@@ -6,6 +6,7 @@
     "mperdeck <mperdeck@gmail.com>"
   ],
   "description": "Tiny JavaScript logger library, simple and well documented. Lots of options to filter logging data. Sends log data to the server using AJAX.",
+  "moduleType": [ "globals", "amd", "node" ],
   "keywords": [
     "logging",
 	"logger",
@@ -19,6 +20,13 @@
     "node_modules",
     "bower_components",
     "test",
-    "tests"
+    "tests",
+    "Definitions",
+    "bin",
+    "obj",
+	"*.*",
+	"!jsnlog.js",
+	"!jsnlog.js.map",
+	"!jsnlog.min.js"
   ]
 }
