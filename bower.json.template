@@ -26,6 +26,7 @@
     "obj",
 	"*.*",
 	"!jsnlog.js",
+	"!jsnlog.ts",
 	"!jsnlog.js.map",
 	"!jsnlog.min.js"
   ]
