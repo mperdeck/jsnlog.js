@@ -589,20 +589,22 @@ module JL
 
                 var xhr = this.getXhr(ajaxUrl);
 
+                var json: string = JSON.stringify({
+                    r: JL.requestId,
+                    lg: logItems
+                });
+
                 // call beforeSend callback
                 // first try the callback on the appender
                 // then the global defaultBeforeSend callback
                 if (typeof this.beforeSend === 'function')
                 {
-                    this.beforeSend.call(this, xhr, logItems);
+                    this.beforeSend.call(this, xhr, json);
                 } else if (typeof JL.defaultBeforeSend === 'function')
                 {
-                    JL.defaultBeforeSend.call(this, xhr, logItems);
+                    JL.defaultBeforeSend.call(this, xhr, json);
                 }
-                var json: string = JSON.stringify({
-                    r: JL.requestId,
-                    lg: logItems
-                });
+
                 xhr.send(json);
             } catch (e) { }
         }
