@@ -589,10 +589,10 @@ module JL
 
                 var xhr = this.getXhr(ajaxUrl);
 
-                var json: string = JSON.stringify({
+                var json: any = {
                     r: JL.requestId,
                     lg: logItems
-                });
+                };
 
                 // call beforeSend callback
                 // first try the callback on the appender
@@ -605,7 +605,8 @@ module JL
                     JL.defaultBeforeSend.call(this, xhr, json);
                 }
 
-                xhr.send(json);
+                var finalmsg = JSON.stringify(json);
+                xhr.send(finalmsg);
             } catch (e) { }
         }
 
