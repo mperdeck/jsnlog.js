@@ -583,11 +583,6 @@ module JL
                     ajaxUrl = this.url;
                 }
 
-                var json: string = JSON.stringify({
-                    r: JL.requestId,
-                    lg: logItems
-                });
-
                 // Send the json to the server. 
                 // Note that there is no event handling here. If the send is not
                 // successful, nothing can be done about it.
@@ -599,12 +594,15 @@ module JL
                 // then the global defaultBeforeSend callback
                 if (typeof this.beforeSend === 'function')
                 {
-                  this.beforeSend.call(this, xhr);
+                    this.beforeSend.call(this, xhr, logItems);
                 } else if (typeof JL.defaultBeforeSend === 'function')
                 {
-                  JL.defaultBeforeSend.call(this, xhr);
+                    JL.defaultBeforeSend.call(this, xhr, logItems);
                 }
-
+                var json: string = JSON.stringify({
+                    r: JL.requestId,
+                    lg: logItems
+                });
                 xhr.send(json);
             } catch (e) { }
         }
