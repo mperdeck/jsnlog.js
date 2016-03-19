@@ -954,7 +954,7 @@ module JL
     
 // Support CommonJS module format 
 
-var exports: any;
+declare var exports: any;
 if (typeof exports !== 'undefined')
 {
     exports.JL = JL;
