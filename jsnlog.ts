@@ -618,32 +618,6 @@ module JL
         {
 		    var xhr = new XMLHttpRequest();
 
-			// Check whether this xhr is CORS capable by checking whether it has
-			// withCredentials. 
-			// "withCredentials" only exists on XMLHTTPRequest2 objects.
-	
-			if (!("withCredentials" in xhr)) {
-
-				// Just found that no XMLHttpRequest2 available.
-				// Check if XDomainRequest is available.
-				// This only exists in IE, and is IE's way of making CORS requests.
-
-				if (typeof XDomainRequest != "undefined") {
-
-					// Note that here we're not setting request headers on the XDomainRequest
-					// object. This is because this object doesn't let you do that:
-					// http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx
-					// This means that for IE8 and IE9, CORS logging requests do not carry request ids.
-
-					var xdr = new XDomainRequest();
-					xdr.open('POST', ajaxUrl);
-					return xdr;
-				}
-			}
-
-			// At this point, we're going with XMLHttpRequest, whether it is CORS capable or not.
-			// If it is not CORS capable, at least will handle the non-CORS requests.
-
 			xhr.open('POST', ajaxUrl);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.setRequestHeader('JSNLog-RequestId', JL.requestId);
