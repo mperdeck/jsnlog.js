@@ -20,7 +20,7 @@ function JL(loggerName?: string): JSNLogLogger
     }
 
     // Implements Array.reduce. JSNLog supports IE8+ and reduce is not supported in that browser.
-    // Same interface as the standard reduce, except that 
+    // Same interface as the standard reduce, except that
     if (!Array.prototype.reduce)
     {
         Array.prototype.reduce = function (callback: (previousValue: any, currentValue: any, currentIndex: number, array: any[]) => any, initialValue?: any)
@@ -56,13 +56,13 @@ function JL(loggerName?: string): JSNLogLogger
             // So if the root has a child logger 'c' (stored in a property 'c' of the root logger),
             // then logger 'a.b' has that same property 'c' through inheritance.
 
-            // The names of the logger properties start with __, so the root logger 
-            // (which has name ''), has a nice property name '__'.              
+            // The names of the logger properties start with __, so the root logger
+            // (which has name ''), has a nice property name '__'.
 
             // accumulatedLoggerName evaluates false ('' is falsy) in first iteration when prev is the root logger.
             // accumulatedLoggerName will be the logger name corresponding with the logger in currentLogger.
             // Keep in mind that the currentLogger may not be defined yet, so can't get the name from
-            // the currentLogger object itself. 
+            // the currentLogger object itself.
             if (accumulatedLoggerName)
             {
                 accumulatedLoggerName += '.' + curr;
@@ -73,14 +73,14 @@ function JL(loggerName?: string): JSNLogLogger
 
             var currentLogger = prev['__' + accumulatedLoggerName];
 
-            // If the currentLogger (or the actual logger being sought) does not yet exist, 
+            // If the currentLogger (or the actual logger being sought) does not yet exist,
             // create it now.
             if (currentLogger === undefined)
             {
 
                 // Set the prototype of the Logger constructor function to the parent of the logger
                 // to be created. This way, __proto of the new logger object will point at the parent.
-                // When logger.level is evaluated and is not present, the JavaScript runtime will 
+                // When logger.level is evaluated and is not present, the JavaScript runtime will
                 // walk down the prototype chain to find the first ancestor with a level property.
                 //
                 // Note that prev at this point refers to the parent logger.
@@ -214,7 +214,7 @@ module JL
     // Otherwise, logObject itself is returned.
     function stringifyLogObjectFunction(logObject: any): any
     {
-        if (typeof logObject == "function") 
+        if (typeof logObject == "function")
         {
             if (logObject instanceof RegExp)
             {
@@ -231,7 +231,7 @@ module JL
 
     class StringifiedLogObject
     {
-        // * msg - 
+        // * msg -
         //      if the logObject is a scalar (after possible function evaluation), this is set to
         //      string representing the scalar. Otherwise it is left undefined.
         // * meta -
@@ -245,7 +245,7 @@ module JL
         constructor(public msg?: string, public meta?: any, public finalString?: string) { }
     }
 
-    // Takes a logObject, which can be 
+    // Takes a logObject, which can be
     // * a scalar
     // * an object
     // * a parameterless function, which returns the scalar or object to log.
@@ -259,7 +259,7 @@ module JL
         var actualLogObject = stringifyLogObjectFunction(logObject);
         var finalString;
 
-        // Note that typeof actualLogObject should not be "function", because that has 
+        // Note that typeof actualLogObject should not be "function", because that has
         // been resolved with stringifyLogObjectFunction.
 
         switch (typeof actualLogObject)
@@ -267,10 +267,10 @@ module JL
             case "string":
                 return new StringifiedLogObject(actualLogObject, null, actualLogObject);
             case "number":
-                finalString = actualLogObject.toString(); 
+                finalString = actualLogObject.toString();
                 return new StringifiedLogObject(finalString, null, finalString);
             case "boolean":
-                finalString = actualLogObject.toString(); 
+                finalString = actualLogObject.toString();
                 return new StringifiedLogObject(finalString, null, finalString);
             case "undefined":
                 return new StringifiedLogObject("undefined", null, "undefined");
@@ -332,7 +332,7 @@ module JL
         // data replaces message. It takes not just strings, but also objects and functions, just like the log function.
         // internally, the string representation is stored in the message property (inherited from Error)
         //
-        // inner: inner exception. Can be null or undefined. 
+        // inner: inner exception. Can be null or undefined.
         constructor(data: any, public inner: any)
         {
             this.name = "JL.Exception";
@@ -374,7 +374,7 @@ module JL
         public userAgentRegex: string;
         public disallow: string;
 
-        // set to super high level, so if user increases level, level is unlikely to get 
+        // set to super high level, so if user increases level, level is unlikely to get
         // above sendWithBufferLevel
         private sendWithBufferLevel: number = 2147483647;
 
@@ -382,7 +382,7 @@ module JL
         private bufferSize: number = 0; // buffering switch off by default
         private batchSize: number = 1;
 
-        // Holds all log items with levels higher than storeInBufferLevel 
+        // Holds all log items with levels higher than storeInBufferLevel
         // but lower than level. These items may never be sent.
         private buffer: LogItem[] = [];
 
@@ -542,7 +542,7 @@ module JL
             // JSON.stringify is only supported on IE8+
             // Use try-catch in case we get an exception here.
             //
-            // The "r" field is now obsolete. When writing a server side component, 
+            // The "r" field is now obsolete. When writing a server side component,
             // read the HTTP header "JSNLog-RequestId"
             // to get the request id.
             //
@@ -559,7 +559,7 @@ module JL
             // before the server side component tries to log the client side log message
             // through an NLog logger.
             // Unlike Log4Net, NLog doesn't allow you to register an object whose ToString()
-            // is only called when it tries to log something, so the requestId has to be 
+            // is only called when it tries to log something, so the requestId has to be
             // determined right at the start of request processing.
             try
             {
@@ -568,7 +568,7 @@ module JL
                 //
                 // This is because the server side component sets defaultAjaxUrl
                 // in a call to setOptions, AFTER the JL object and the default appender
-                // have been created. 
+                // have been created.
 
                 var ajaxUrl: string = "/jsnlog.logger";
 
@@ -583,7 +583,7 @@ module JL
                     ajaxUrl = this.url;
                 }
 
-                // Send the json to the server. 
+                // Send the json to the server.
                 // Note that there is no event handling here. If the send is not
                 // successful, nothing can be done about it.
 
@@ -617,32 +617,6 @@ module JL
 		private getXhr(ajaxUrl: string): any
         {
 		    var xhr = new XMLHttpRequest();
-
-			// Check whether this xhr is CORS capable by checking whether it has
-			// withCredentials. 
-			// "withCredentials" only exists on XMLHTTPRequest2 objects.
-	
-			if (!("withCredentials" in xhr)) {
-
-				// Just found that no XMLHttpRequest2 available.
-				// Check if XDomainRequest is available.
-				// This only exists in IE, and is IE's way of making CORS requests.
-
-				if (typeof XDomainRequest != "undefined") {
-
-					// Note that here we're not setting request headers on the XDomainRequest
-					// object. This is because this object doesn't let you do that:
-					// http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx
-					// This means that for IE8 and IE9, CORS logging requests do not carry request ids.
-
-					var xdr = new XDomainRequest();
-					xdr.open('POST', ajaxUrl);
-					return xdr;
-				}
-			}
-
-			// At this point, we're going with XMLHttpRequest, whether it is CORS capable or not.
-			// If it is not CORS capable, at least will handle the non-CORS requests.
 
 			xhr.open('POST', ajaxUrl);
             xhr.setRequestHeader('Content-Type', 'application/json');
@@ -699,7 +673,7 @@ module JL
             }
         }
 
-        // IE11 has a console.debug function. But its console doesn't have 
+        // IE11 has a console.debug function. But its console doesn't have
         // the option to show/hide debug messages (the same way Chrome and FF do),
         // even though it does have such buttons for Error, Warn, Info.
         //
@@ -779,7 +753,7 @@ module JL
         public ipRegex: string;
         public disallow: string;
 
-        // Used to remember which regexes in onceOnly have been successfully 
+        // Used to remember which regexes in onceOnly have been successfully
         // matched against a message. Index into this array is same as index
         // in onceOnly of the corresponding regex.
         // When a regex has never been matched, the corresponding entry in this
@@ -846,7 +820,7 @@ module JL
 
             if (((level >= this.level)) && allow(this))
             {
-                if (e) 
+                if (e)
                 {
                     excObject = this.buildExceptionObject(e);
                     excObject.logData = stringifyLogObjectFunction(logObject);
@@ -951,8 +925,8 @@ module JL
             appenders: [defaultAppender]
         });
 }
-    
-// Support CommonJS module format 
+
+// Support CommonJS module format
 
 declare var exports: any;
 if (typeof exports !== 'undefined')
