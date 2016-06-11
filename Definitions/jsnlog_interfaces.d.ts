@@ -1,5 +1,5 @@
 ﻿/**
-* Copyright 2015 Mattijs Perdeck.
+* Copyright 2016 Mattijs Perdeck.
 *
 * This project is licensed under the MIT license.
 * 
