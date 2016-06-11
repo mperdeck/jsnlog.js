@@ -3,12 +3,14 @@
 // ----------------------------------------------------------
 // JL
 
+var offLevel: number = JL.getOffLevel();
 var traceLevel: number = JL.getTraceLevel();
 var debugLevel: number = JL.getDebugLevel();
 var infoLevel: number = JL.getInfoLevel();
 var warnLevel: number = JL.getWarnLevel();
 var errorLevel: number = JL.getErrorLevel();
 var fatalLevel: number = JL.getFatalLevel();
+var allLevel: number = JL.getAllLevel();
 
 JL.setOptions({
 		enabled: true,

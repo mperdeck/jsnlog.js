@@ -81,12 +81,14 @@ declare module JSNLog {
 		createAjaxAppender(appenderName: string): JSNLogAjaxAppender;
 		createConsoleAppender(appenderName: string): JSNLogConsoleAppender;
 
+		getOffLevel(): number;
 		getTraceLevel(): number;
 		getDebugLevel(): number;
 		getInfoLevel(): number;
 		getWarnLevel(): number;
 		getErrorLevel(): number;
 		getFatalLevel(): number;
+		getAllLevel(): number;
 	}
 }
 
