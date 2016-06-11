@@ -74,6 +74,9 @@ declare module JSNLog {
 	interface JSNLogConsoleAppender extends JSNLogAppender {
 	}
 
+	declare class Exception {
+	}
+	
 	interface JSNLogStatic {
 		(loggerName?: string): JSNLogLogger;
 

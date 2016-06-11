@@ -22,6 +22,11 @@ JL.setOptions({
 });
 
 // ----------------------------------------------------------
+// Exception
+
+var e = new JL.Exception("i is too small!");
+
+// ----------------------------------------------------------
 // Ajax Appender
 
 var ajaxAppender1: JSNLog.JSNLogAjaxAppender = JL.createAjaxAppender('ajaxAppender');
