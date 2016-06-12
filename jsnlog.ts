@@ -1,14 +1,14 @@
 /// <reference path="Definitions/jsnlog_interfaces.d.ts"/>
 
-import JSNLogAppender = JSNLog.JSNLogAppender
-import JSNLogAppenderOptions = JSNLog.JSNLogAppenderOptions
-import JSNLogAjaxAppender = JSNLog.JSNLogAjaxAppender
-import JSNLogAjaxAppenderOptions = JSNLog.JSNLogAjaxAppenderOptions
-import JSNLogConsoleAppender = JSNLog.JSNLogConsoleAppender
-import JSNLogFilterOptions = JSNLog.JSNLogFilterOptions
-import JSNLogLogger = JSNLog.JSNLogLogger
-import JSNLogLoggerOptions = JSNLog.JSNLogLoggerOptions
-import JSNLogOptions = JSNLog.JSNLogOptions
+import JSNLogAppender = JL.JSNLogAppender
+import JSNLogAppenderOptions = JL.JSNLogAppenderOptions
+import JSNLogAjaxAppender = JL.JSNLogAjaxAppender
+import JSNLogAjaxAppenderOptions = JL.JSNLogAjaxAppenderOptions
+import JSNLogConsoleAppender = JL.JSNLogConsoleAppender
+import JSNLogFilterOptions = JL.JSNLogFilterOptions
+import JSNLogLogger = JL.JSNLogLogger
+import JSNLogLoggerOptions = JL.JSNLogLoggerOptions
+import JSNLogOptions = JL.JSNLogOptions
 //###########  import JSNLogStatic = JSNLog.JSNLogStatic
 
 function JL(loggerName?: string): JSNLogLogger
