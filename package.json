@@ -1,8 +1,9 @@
 {
   "name": "jsnlog",
-  "version": "2.17.1",
+  "version": "2.17.2",
   "description": "Simple logging package. Use on client and/or server. On the client, sends logs to the server and stores them in your existing server side logs. On the server, log to console or use Winston transports. Ideal for logging exceptions, AJAX timeouts.",
   "main": "jsnlog.js",
+  "typings": "./Definitions/jsnlog.d.ts"
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
