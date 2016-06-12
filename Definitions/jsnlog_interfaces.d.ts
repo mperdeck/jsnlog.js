@@ -79,7 +79,6 @@ declare module JL {
 	export function createConsoleAppender(appenderName: string): JSNLogConsoleAppender;
 
 	export class Exception {
-//		constructor(data: any);
 		constructor(data: any, inner?: any);
 	}
 	
