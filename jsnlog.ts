@@ -10,6 +10,12 @@ import JSNLogLogger = JL.JSNLogLogger
 import JSNLogLoggerOptions = JL.JSNLogLoggerOptions
 import JSNLogOptions = JL.JSNLogOptions
 
+// Ambient definition of XDomainRequest (only used with IE8 and 9), to prevent TypeScript compiler "name not found" error.
+declare class XDomainRequest
+{
+	open(method: string, url: string);
+}
+
 function JL(loggerName?: string): JSNLogLogger
 {
     // If name is empty, return the root logger
