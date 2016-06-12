@@ -73,6 +73,24 @@ declare module JL {
 
 	interface JSNLogConsoleAppender extends JSNLogAppender {
 	}
+
+	export function setOptions(options: JSNLogOptions): any /*############## : JSNLogStatic */;
+	export function createAjaxAppender(appenderName: string): JSNLogAjaxAppender;
+	export function createConsoleAppender(appenderName: string): JSNLogConsoleAppender;
+
+	export class Exception {
+//		constructor(data: any);
+		constructor(data: any, inner?: any);
+	}
+	
+	export function getOffLevel(): number;
+	export function getTraceLevel(): number;
+	export function getDebugLevel(): number;
+	export function getInfoLevel(): number;
+	export function getWarnLevel(): number;
+	export function getErrorLevel(): number;
+	export function getFatalLevel(): number;
+	export function getAllLevel(): number;
 }
 
 //############ declare function __jsnlog_configure(jsnlog: JSNLog.JSNLogStatic): void;
