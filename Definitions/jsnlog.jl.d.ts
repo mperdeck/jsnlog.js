@@ -1,18 +1,18 @@
 ﻿
 // Ambient declaration of the JL object itself
 
-//########## declare var JL: JSNLog.JSNLogStatic;
+//########## declare var JL: JL.JSNLogStatic;
 
-import JSNLogAppender = JSNLog.JSNLogAppender
-import JSNLogAppenderOptions = JSNLog.JSNLogAppenderOptions
-import JSNLogAjaxAppender = JSNLog.JSNLogAjaxAppender
-import JSNLogAjaxAppenderOptions = JSNLog.JSNLogAjaxAppenderOptions
-import JSNLogConsoleAppender = JSNLog.JSNLogConsoleAppender
-import JSNLogFilterOptions = JSNLog.JSNLogFilterOptions
-import JSNLogLogger = JSNLog.JSNLogLogger
-import JSNLogLoggerOptions = JSNLog.JSNLogLoggerOptions
-import JSNLogOptions = JSNLog.JSNLogOptions
-//######### import JSNLogStatic = JSNLog.JSNLogStatic
+import JSNLogAppender = JL.JSNLogAppender
+import JSNLogAppenderOptions = JL.JSNLogAppenderOptions
+import JSNLogAjaxAppender = JL.JSNLogAjaxAppender
+import JSNLogAjaxAppenderOptions = JL.JSNLogAjaxAppenderOptions
+import JSNLogConsoleAppender = JL.JSNLogConsoleAppender
+import JSNLogFilterOptions = JL.JSNLogFilterOptions
+import JSNLogLogger = JL.JSNLogLogger
+import JSNLogLoggerOptions = JL.JSNLogLoggerOptions
+import JSNLogOptions = JL.JSNLogOptions
+//######### import JSNLogStatic = JL.JSNLogStatic
 
 declare function JL(loggerName?: string): JSNLogLogger;
 
@@ -23,6 +23,7 @@ declare module JL
 	export function createConsoleAppender(appenderName: string): JSNLogConsoleAppender;
 
 	export class Exception {
+//		constructor(data: any);
 		constructor(data: any, inner?: any);
 	}
 	

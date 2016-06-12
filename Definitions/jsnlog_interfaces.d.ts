@@ -14,7 +14,7 @@
 // Provides strong typing in both jsnlog.ts itself and in TypeScript programs that use 
 // JSNLog. 
 
-declare module JSNLog {
+declare module JL {
 
 	interface JSNLogOptions {
 		enabled?: boolean;

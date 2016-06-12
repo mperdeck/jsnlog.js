@@ -29,7 +29,7 @@ var e = new JL.Exception("i is too small!");
 // ----------------------------------------------------------
 // Ajax Appender
 
-var ajaxAppender1: JSNLog.JSNLogAjaxAppender = JL.createAjaxAppender('ajaxAppender');
+var ajaxAppender1: JL.JSNLogAjaxAppender = JL.createAjaxAppender('ajaxAppender');
 
 ajaxAppender1.setOptions({
 		level: 5000,
@@ -47,7 +47,7 @@ ajaxAppender1.setOptions({
 // ----------------------------------------------------------
 // Console Appender
 
-var consoleAppender1: JSNLog.JSNLogConsoleAppender = JL.createConsoleAppender('consoleAppender');
+var consoleAppender1: JL.JSNLogConsoleAppender = JL.createConsoleAppender('consoleAppender');
 
 consoleAppender1.setOptions({
 		level: 5000,
@@ -64,7 +64,7 @@ consoleAppender1.setOptions({
 // ----------------------------------------------------------
 // Loggers
 
-var logger1: JSNLog.JSNLogLogger = JL('mylogger');
+var logger1: JL.JSNLogLogger = JL('mylogger');
 
 var exception = {};
 
