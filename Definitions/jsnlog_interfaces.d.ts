@@ -73,27 +73,7 @@ declare module JSNLog {
 
 	interface JSNLogConsoleAppender extends JSNLogAppender {
 	}
-
-	declare class Exception {
-	}
-	
-	interface JSNLogStatic {
-		(loggerName?: string): JSNLogLogger;
-
-		setOptions(options: JSNLogOptions): JSNLogStatic;
-		createAjaxAppender(appenderName: string): JSNLogAjaxAppender;
-		createConsoleAppender(appenderName: string): JSNLogConsoleAppender;
-
-		getOffLevel(): number;
-		getTraceLevel(): number;
-		getDebugLevel(): number;
-		getInfoLevel(): number;
-		getWarnLevel(): number;
-		getErrorLevel(): number;
-		getFatalLevel(): number;
-		getAllLevel(): number;
-	}
 }
 
-declare function __jsnlog_configure(jsnlog: JSNLog.JSNLogStatic): void;
+//############ declare function __jsnlog_configure(jsnlog: JSNLog.JSNLogStatic): void;
 

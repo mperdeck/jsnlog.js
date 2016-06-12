@@ -9,7 +9,7 @@ import JSNLogFilterOptions = JSNLog.JSNLogFilterOptions
 import JSNLogLogger = JSNLog.JSNLogLogger
 import JSNLogLoggerOptions = JSNLog.JSNLogLoggerOptions
 import JSNLogOptions = JSNLog.JSNLogOptions
-import JSNLogStatic = JSNLog.JSNLogStatic
+//###########  import JSNLogStatic = JSNLog.JSNLogStatic
 
 function JL(loggerName?: string): JSNLogLogger
 {
@@ -292,7 +292,7 @@ module JL
         }
     }
 
-    export function setOptions(options: JSNLogOptions): JSNLogStatic
+    export function setOptions(options: JSNLogOptions): any /* : ####### JSNLogStatic */
     {
         copyProperty("enabled", options, this);
         copyProperty("maxMessages", options, this);
@@ -333,7 +333,7 @@ module JL
         // internally, the string representation is stored in the message property (inherited from Error)
         //
         // inner: inner exception. Can be null or undefined. 
-        constructor(data: any, public inner: any)
+        constructor(data: any, public inner?: any)
         {
             this.name = "JL.Exception";
             this.message = stringifyLogObject(data).finalString;

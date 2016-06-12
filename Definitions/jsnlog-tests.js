@@ -1,13 +1,14 @@
-﻿/// <reference path="jsnlog.d.ts" />
+/// <reference path="jsnlog.d.ts" />
 // ----------------------------------------------------------
 // JL
+var offLevel = JL.getOffLevel();
 var traceLevel = JL.getTraceLevel();
 var debugLevel = JL.getDebugLevel();
 var infoLevel = JL.getInfoLevel();
 var warnLevel = JL.getWarnLevel();
 var errorLevel = JL.getErrorLevel();
 var fatalLevel = JL.getFatalLevel();
-
+var allLevel = JL.getAllLevel();
 JL.setOptions({
     enabled: true,
     maxMessages: 5,
@@ -16,11 +17,12 @@ JL.setOptions({
     requestId: 'a reuest id',
     defaultBeforeSend: null
 });
-
+// ----------------------------------------------------------
+// Exception
+var e = new JL.Exception("i is too small!");
 // ----------------------------------------------------------
 // Ajax Appender
 var ajaxAppender1 = JL.createAjaxAppender('ajaxAppender');
-
 ajaxAppender1.setOptions({
     level: 5000,
     ipRegex: 'a regex',
@@ -33,11 +35,9 @@ ajaxAppender1.setOptions({
     url: '/jsnlog.logger',
     beforeSend: null
 });
-
 // ----------------------------------------------------------
 // Console Appender
 var consoleAppender1 = JL.createConsoleAppender('consoleAppender');
-
 consoleAppender1.setOptions({
     level: 5000,
     ipRegex: 'a regex',
@@ -48,23 +48,17 @@ consoleAppender1.setOptions({
     bufferSize: 10,
     batchSize: 2
 });
-
 // ----------------------------------------------------------
 // Loggers
 var logger1 = JL('mylogger');
-
 var exception = {};
-
 logger1.trace('log message').debug({ x: 1, y: 2 });
-logger1.info(function () {
-    return 5;
-});
+logger1.info(function () { return 5; });
 logger1.warn('log message');
 logger1.error('log message');
 logger1.fatal('log message');
 logger1.fatalException('log message', exception);
 logger1.log(4000, 'log message', exception);
-
 logger1.setOptions({
     level: 5000,
     ipRegex: 'a regex',
