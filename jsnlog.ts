@@ -9,7 +9,6 @@ import JSNLogFilterOptions = JL.JSNLogFilterOptions
 import JSNLogLogger = JL.JSNLogLogger
 import JSNLogLoggerOptions = JL.JSNLogLoggerOptions
 import JSNLogOptions = JL.JSNLogOptions
-//###########  import JSNLogStatic = JSNLog.JSNLogStatic
 
 function JL(loggerName?: string): JSNLogLogger
 {
@@ -292,7 +291,7 @@ module JL
         }
     }
 
-    export function setOptions(options: JSNLogOptions): any /* : ####### JSNLogStatic */
+    export function setOptions(options: JSNLogOptions): void
     {
         copyProperty("enabled", options, this);
         copyProperty("maxMessages", options, this);

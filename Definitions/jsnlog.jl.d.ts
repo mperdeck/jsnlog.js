@@ -1,10 +1,13 @@
 ﻿
-// Ambient declaration of the JL object itself
-
+// Ambient declaration of the JL function itself
 declare function JL(loggerName?: string): JL.JSNLogLogger;
 
+// Definitions that need to be kept out of the main module definition,
+// because otherwise during compilation of jsnlog.ts it complains that you can't 
+// overload ambient declarations with non-ambient declarations.
+
 declare module JL {
-	export function setOptions(options: JSNLogOptions): any /*############## : JSNLogStatic */;
+	export function setOptions(options: JSNLogOptions): void;
 	export function createAjaxAppender(appenderName: string): JSNLogAjaxAppender;
 	export function createConsoleAppender(appenderName: string): JSNLogConsoleAppender;
 
