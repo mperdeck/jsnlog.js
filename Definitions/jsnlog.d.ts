@@ -24,7 +24,7 @@
 // Provides strong typing in both jsnlog.ts itself and in TypeScript programs that use 
 // JSNLog. 
 
-declare module JL {
+declare namespace JL {
 
 	interface JSNLogOptions {
 		enabled?: boolean;
@@ -91,11 +91,11 @@ declare function __jsnlog_configure(jsnlog: any): void;
 // Ambient declaration of the JL function itself
 declare function JL(loggerName?: string): JL.JSNLogLogger;
 
-// Definitions that need to be kept out of the main module definition,
+// Definitions that need to be kept out of the main namespace definition,
 // because otherwise during compilation of jsnlog.ts it complains that you can't 
 // overload ambient declarations with non-ambient declarations.
 
-declare module JL {
+declare namespace JL {
 	export function setOptions(options: JSNLogOptions): void;
 	export function createAjaxAppender(appenderName: string): JSNLogAjaxAppender;
 	export function createConsoleAppender(appenderName: string): JSNLogConsoleAppender;
