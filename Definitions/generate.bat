@@ -13,8 +13,14 @@ rem
 rem You must use /b (binary), otherwise copy will add a control-z character at the end of the file
 copy jsnlog.DefinitelyTypedHeading.txt + jsnlog_interfaces.d.ts + jsnlog.jl.d.ts /b jsnlog.d.ts
 
-rem Run tests, as mandated by DefinitelyTyped
+rem The export statement in the file below is required for a file that is listed in the typings element in package.json.
+rem This because that file must be regarded as a "module", and for that it must have an export.
+rem However, having the export in the file that gets included in the tests above with
+rem    /// <reference path="jsnlog.d.ts" />
+rem leads to an error message.
+copy jsnlog.DefinitelyTypedHeading.txt + jsnlog_interfaces.d.ts + jsnlog.jl.d.ts + jsnlog.export.d.ts /b jl.d.ts
 
+rem Run tests, as mandated by DefinitelyTyped
 call tsc --noImplicitAny -sourcemap jsnlog-tests.ts
 
 
