@@ -29,6 +29,15 @@ Function CopyFromJsnlogJs([string]$jsnlogJsPath)
 
 # Visit all jsnlog...js files in the D:\dev\JSNLog directory (that is, the current parent directory)
 # and its sub directories, and overwrite with the versions from jsnlog.js.
-get-childitem '..' -recurse -force | ?{((($_ -Match "jsnlog.min.js") -Or ($_ -Match "jsnlog.js") -Or ($_ -Match "jsnlog.js.map")) -And -Not (($_.FullName -Match "Background") -Or ($_.FullName -Match '\\jsnlog.js\\')))} | ForEach-Object { CopyFromJsnlogJs $_.FullName }
+# Some directories with node_modules have names that are too long to deal with for PowerShell. You can't filter them out in the get-childitem, because the
+# filter itself throws the "too long path" exception. So catch the exceptions in an $err variable and then process them.
+get-childitem '..' -recurse -force -ErrorAction SilentlyContinue -ErrorVariable err | ?{((($_ -Match "jsnlog.min.js") -Or ($_ -Match "jsnlog.js") -Or ($_ -Match "jsnlog.js.map")) -And -Not (($_.FullName -Match "Background") -Or ($_.FullName -Match '\\jsnlog.js\\')))} | ForEach-Object { CopyFromJsnlogJs $_.FullName }
+foreach ($errorRecord in $err)
+{
+	if (!($errorRecord.Exception -is [System.IO.PathTooLongException]))
+	{
+		Write-Error -ErrorRecord $errorRecord
+	}
+}
 
 Write-Host "-----------------------------------"
