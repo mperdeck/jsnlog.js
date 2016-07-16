@@ -22,9 +22,11 @@ Function CopyFromJsnlogJs([string]$jsnlogJsPath)
 	# Get file path inside the jsnlog.js project  
 	$jsnlogJsVersionFilePath = [System.IO.Path]::GetFileName($jsnlogJsPath)
 	
-	Copy-Item $jsnlogJsVersionFilePath $jsnlogJsPath
-
-    Write-Host "Copied $jsnlogJsVersionFilePath to $jsnlogJsPath"
+	if ($jsnlogJsPath -ne $PSScriptRoot)
+	{
+		Copy-Item $jsnlogJsVersionFilePath $jsnlogJsPath
+		Write-Host "Copied $jsnlogJsVersionFilePath to $jsnlogJsPath"
+	}
 }
 
 # Visit all jsnlog...js files in the D:\dev\JSNLog directory (that is, the current parent directory)
