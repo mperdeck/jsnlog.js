@@ -2,10 +2,15 @@
 
 Write-Host "------ jsnlog.js/minify.ps1 -------"
 
-# If the below throws an error, install the compiler: npm install -g typescript
-tsc -sourcemap jsnlog.ts
+# Delete generated files. That way, if compilation/minification goes wrong, you'll know about it.
+If (Test-Path "jsnlog.js"){ Remove-Item "jsnlog.js" }
+If (Test-Path "jsnlog.js.map"){ Remove-Item "jsnlog.js.map" }
+If (Test-Path "jsnlog.min.js"){ Remove-Item "jsnlog.min.js" }
 
-& java.exe -jar "C:\Program Files (x86)\Java\jars\Google Closure Compiler\compiler.jar" --js jsnlog.js --js_output_file=jsnlog.min.js
+# If the below throws an error, install the compiler: npm install -g typescript
+tsc jsnlog.ts
+
+& java.exe -jar "C:\Program Files (x86)\Java\jars\Google Closure Compiler\compiler.jar" --js jsnlog.js --js_output_file=jsnlog.min.js --create_source_map jsnlog.js.map
 
 cd Definitions 
 & cmd.exe /c generate.bat
