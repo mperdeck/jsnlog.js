@@ -793,7 +793,7 @@ if (typeof __jsnlog_configure == 'function') {
 }
 // Create onerror handler to log uncaught exceptions to the server side log, but only if there 
 // is no such handler already.
-if (window && !window.onerror) {
+if (typeof window !== 'undefined' && !window.onerror) {
     window.onerror = function (errorMsg, url, lineNumber, column, errorObj) {
         // Send object with all data to server side log, using severity fatal, 
         // from logger "onerrorLogger"
