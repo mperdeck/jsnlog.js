@@ -984,6 +984,7 @@ if (typeof __jsnlog_configure == 'function') { __jsnlog_configure(JL); }
 
 // Create onerror handler to log uncaught exceptions to the server side log, but only if there 
 // is no such handler already.
+// Must use "typeof window" here, because in NodeJs, window is not defined at all, so cannot refer to window in any way.
 
 if (typeof window !== 'undefined' && !window.onerror) {
     window.onerror = function (errorMsg, url, lineNumber, column, errorObj) {
