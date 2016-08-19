@@ -12,6 +12,17 @@ tsc jsnlog.ts
 
 & java.exe -jar "C:\Program Files (x86)\Java\jars\Google Closure Compiler\closure-compiler-v20160713.jar" --js jsnlog.js --js_output_file=jsnlog.min.js --create_source_map jsnlog.js.map
 
+
+# Add header with version number and copyright notice.
+cat versionheading.txt, jsnlog.js | sc jsnlog.js.temp
+del jsnlog.js
+ren jsnlog.js.temp jsnlog.js
+
+cat versionheading.txt, jsnlog.min.js | sc jsnlog.min.js.temp
+del jsnlog.min.js
+ren jsnlog.min.js.temp jsnlog.min.js
+
+
 cd Definitions 
 & cmd.exe /c generate.bat
 cd ..
