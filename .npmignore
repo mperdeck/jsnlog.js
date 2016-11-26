@@ -2,6 +2,7 @@
 .vs
 .git
 bin/
+obj/
 node_modules/
 
 *.template
