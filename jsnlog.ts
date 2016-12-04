@@ -110,6 +110,7 @@ module JL
     export var defaultAjaxUrl: string;
     export var clientIP: string;
     export var defaultBeforeSend: any;
+    export var serialize: any;
 
     // Initialise requestId to empty string. If you don't do this and the user
     // does not set it via setOptions, then the JSNLog-RequestId header will
@@ -290,7 +291,13 @@ module JL
                 }
                 else
                 {
-                    return new StringifiedLogObject(null, actualLogObject, JSON.stringify(actualLogObject));
+                    if (typeof JL.serialize === 'function') {
+                        finalString = JL.serialize.call(this, actualLogObject);
+                    } else {
+                        finalString = JSON.stringify(actualLogObject);
+                    }
+
+                    return new StringifiedLogObject(null, actualLogObject, finalString);
                 }
             default:
                 return new StringifiedLogObject("unknown", null, "unknown");
@@ -305,6 +312,7 @@ module JL
         copyProperty("clientIP", options, this);
         copyProperty("requestId", options, this);
         copyProperty("defaultBeforeSend", options, this);
+        copyProperty("serialize", options, this);
         return this;
     }
 
