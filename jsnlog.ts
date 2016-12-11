@@ -1009,4 +1009,19 @@ if (typeof window !== 'undefined' && !window.onerror) {
     }
 }
 
+// Deal with unhandled exceptions thrown in promises
+if (typeof window !== 'undefined' && !(<any>window).onunhandledrejection) {
+    (<any>window).onunhandledrejection = function (event) {
+
+        // Send object with all data to server side log, using severity fatal, 
+        // from logger "onerrorLogger"
+        JL("onerrorLogger").fatalException({
+            "msg": "unhandledrejection",
+            "errorMsg": event.reason.message
+        }, event.reason);
+        // Tell browser to run its own error handler as well   
+        return false;
+    };
+}
+
 
