@@ -1017,7 +1017,7 @@ if (typeof window !== 'undefined' && !(<any>window).onunhandledrejection) {
         // from logger "onerrorLogger"
         JL("onerrorLogger").fatalException({
             "msg": "unhandledrejection",
-            "errorMsg": event.reason.message
+            "errorMsg": event.reason ? event.reason.message : null
         }, event.reason);
         // Tell browser to run its own error handler as well   
         return false;
