@@ -1,5 +1,5 @@
-/* 
- * JSNLog 2.22.1
+/*
+ * JSNLog 2.22.0
  * Open source under the MIT License.
  * Copyright 2016 Mattijs Perdeck All rights reserved.
  */
@@ -15,7 +15,7 @@ function JL(loggerName) {
         return JL.__;
     }
     // Implements Array.reduce. JSNLog supports IE8+ and reduce is not supported in that browser.
-    // Same interface as the standard reduce, except that 
+    // Same interface as the standard reduce, except that
     if (!Array.prototype.reduce) {
         Array.prototype.reduce = function (callback, initialValue) {
             var previousValue = initialValue;
@@ -41,12 +41,12 @@ function JL(loggerName) {
         // This is because the parent inherits properties from its ancestors.
         // So if the root has a child logger 'c' (stored in a property 'c' of the root logger),
         // then logger 'a.b' has that same property 'c' through inheritance.
-        // The names of the logger properties start with __, so the root logger 
-        // (which has name ''), has a nice property name '__'.              
+        // The names of the logger properties start with __, so the root logger
+        // (which has name ''), has a nice property name '__'.
         // accumulatedLoggerName evaluates false ('' is falsy) in first iteration when prev is the root logger.
         // accumulatedLoggerName will be the logger name corresponding with the logger in currentLogger.
         // Keep in mind that the currentLogger may not be defined yet, so can't get the name from
-        // the currentLogger object itself. 
+        // the currentLogger object itself.
         if (accumulatedLoggerName) {
             accumulatedLoggerName += '.' + curr;
         }
@@ -54,12 +54,12 @@ function JL(loggerName) {
             accumulatedLoggerName = curr;
         }
         var currentLogger = prev['__' + accumulatedLoggerName];
-        // If the currentLogger (or the actual logger being sought) does not yet exist, 
+        // If the currentLogger (or the actual logger being sought) does not yet exist,
         // create it now.
         if (currentLogger === undefined) {
             // Set the prototype of the Logger constructor function to the parent of the logger
             // to be created. This way, __proto of the new logger object will point at the parent.
-            // When logger.level is evaluated and is not present, the JavaScript runtime will 
+            // When logger.level is evaluated and is not present, the JavaScript runtime will
             // walk down the prototype chain to find the first ancestor with a level property.
             //
             // Note that prev at this point refers to the parent logger.
@@ -187,7 +187,7 @@ var JL;
         return logObject;
     }
     var StringifiedLogObject = (function () {
-        // * msg - 
+        // * msg -
         //      if the logObject is a scalar (after possible function evaluation), this is set to
         //      string representing the scalar. Otherwise it is left undefined.
         // * meta -
@@ -205,7 +205,7 @@ var JL;
         }
         return StringifiedLogObject;
     }());
-    // Takes a logObject, which can be 
+    // Takes a logObject, which can be
     // * a scalar
     // * an object
     // * a parameterless function, which returns the scalar or object to log.
@@ -216,7 +216,7 @@ var JL;
         // JSON.stringify(null) returns "null".
         var actualLogObject = stringifyLogObjectFunction(logObject);
         var finalString;
-        // Note that typeof actualLogObject should not be "function", because that has 
+        // Note that typeof actualLogObject should not be "function", because that has
         // been resolved with stringifyLogObjectFunction.
         switch (typeof actualLogObject) {
             case "string":
@@ -300,7 +300,7 @@ var JL;
         // data replaces message. It takes not just strings, but also objects and functions, just like the log function.
         // internally, the string representation is stored in the message property (inherited from Error)
         //
-        // inner: inner exception. Can be null or undefined. 
+        // inner: inner exception. Can be null or undefined.
         function Exception(data, inner) {
             this.inner = inner;
             this.name = "JL.Exception";
@@ -342,17 +342,18 @@ var JL;
         // Note that after sendLogItems returns, the appender may truncate
         // the LogItem array, so the function has to copy the content of the array
         // in some fashion (eg. serialize) before returning.
-        function Appender(appenderName, sendLogItems) {
+        function Appender(appenderName, sendLogItems, sendLogItemsSync) {
             this.appenderName = appenderName;
             this.sendLogItems = sendLogItems;
+            this.sendLogItemsSync = sendLogItemsSync;
             this.level = JL.getTraceLevel();
-            // set to super high level, so if user increases level, level is unlikely to get 
+            // set to super high level, so if user increases level, level is unlikely to get
             // above sendWithBufferLevel
             this.sendWithBufferLevel = 2147483647;
             this.storeInBufferLevel = -2147483648;
             this.bufferSize = 0; // buffering switch off by default
             this.batchSize = 1;
-            // Holds all log items with levels higher than storeInBufferLevel 
+            // Holds all log items with levels higher than storeInBufferLevel
             // but lower than level. These items may never be sent.
             this.buffer = [];
             // Holds all items that we do want to send, until we have a full
@@ -435,23 +436,43 @@ var JL;
         };
         // Processes the batch buffer
         Appender.prototype.sendBatch = function () {
-            if (this.batchBuffer.length == 0) {
-                return;
-            }
-            if (!(JL.maxMessages == null)) {
-                if (JL.maxMessages < 1) {
-                    return;
-                }
-            }
-            // If maxMessages is not null or undefined, then decrease it by the batch size.
-            // This can result in a negative maxMessages.
-            // Note that undefined==null (!)
-            if (!(JL.maxMessages == null)) {
-                JL.maxMessages -= this.batchBuffer.length;
-            }
+            if (!this.checkBatch()) return
+
+            this.decreaseMaxMessages();
             this.sendLogItems(this.batchBuffer);
             this.batchBuffer.length = 0;
         };
+
+        Appender.prototype.sendBatchSync = function () {
+            if (!this.checkBatch()) return
+
+            this.decreaseMaxMessages();
+            if (typeof this.sendLogItemsSync === 'function') {
+              this.sendLogItemsSync(this.batchBuffer);
+              this.batchBuffer.length = 0;
+            }
+        };
+
+        Appender.prototype.checkBatch = function () {
+          if (this.batchBuffer.length == 0) {
+              return false;
+          }
+          if (!(JL.maxMessages == null)) {
+              if (JL.maxMessages < 1) {
+                  return false;
+              }
+          }
+          return true
+        };
+
+        Appender.prototype.decreaseMaxMessages = function () {
+          // If maxMessages is not null or undefined, then decrease it by the batch size.
+          // This can result in a negative maxMessages.
+          // Note that undefined==null (!)
+          if (!(JL.maxMessages == null)) {
+              JL.maxMessages -= this.batchBuffer.length;
+          }
+        }
         return Appender;
     }());
     JL.Appender = Appender;
@@ -459,7 +480,7 @@ var JL;
     var AjaxAppender = (function (_super) {
         __extends(AjaxAppender, _super);
         function AjaxAppender(appenderName) {
-            _super.call(this, appenderName, AjaxAppender.prototype.sendLogItemsAjax);
+            _super.call(this, appenderName, AjaxAppender.prototype.sendLogItemsAjax, AjaxAppender.prototype.sendLogItemsSync);
         }
         AjaxAppender.prototype.setOptions = function (options) {
             copyProperty("url", options, this);
@@ -471,7 +492,7 @@ var JL;
             // JSON.stringify is only supported on IE8+
             // Use try-catch in case we get an exception here.
             //
-            // The "r" field is now obsolete. When writing a server side component, 
+            // The "r" field is now obsolete. When writing a server side component,
             // read the HTTP header "JSNLog-RequestId"
             // to get the request id.
             //
@@ -488,27 +509,11 @@ var JL;
             // before the server side component tries to log the client side log message
             // through an NLog logger.
             // Unlike Log4Net, NLog doesn't allow you to register an object whose ToString()
-            // is only called when it tries to log something, so the requestId has to be 
+            // is only called when it tries to log something, so the requestId has to be
             // determined right at the start of request processing.
             try {
-                // Only determine the url right before you send a log request.
-                // Do not set the url when constructing the appender.
-                //
-                // This is because the server side component sets defaultAjaxUrl
-                // in a call to setOptions, AFTER the JL object and the default appender
-                // have been created. 
-                var ajaxUrl = "/jsnlog.logger";
-                // This evaluates to true if defaultAjaxUrl is null or undefined
-                if (!(JL.defaultAjaxUrl == null)) {
-                    ajaxUrl = JL.defaultAjaxUrl;
-                }
-                if (this.url) {
-                    ajaxUrl = this.url;
-                }
-                // Send the json to the server. 
-                // Note that there is no event handling here. If the send is not
-                // successful, nothing can be done about it.
-                var xhr = this.getXhr(ajaxUrl);
+                // to send log item asynchronous, set parameter false
+                var xhr = this.getXhr(false);
                 var json = {
                     r: JL.requestId,
                     lg: logItems
@@ -527,14 +532,57 @@ var JL;
             }
             catch (e) { }
         };
+        AjaxAppender.prototype.sendLogItemsSync = function (logItems) {
+          try {
+              // to send log item synchronous, set parameter true
+              var xhr = this.getXhr(true);
+              var json = {
+                  r: JL.requestId,
+                  lg: logItems
+              };
+              // call beforeSend callback
+              // first try the callback on the appender
+              // then the global defaultBeforeSend callback
+              if (typeof this.beforeSend === 'function') {
+                  this.beforeSend.call(this, xhr, json);
+              }
+              else if (typeof JL.defaultBeforeSend === 'function') {
+                  JL.defaultBeforeSend.call(this, xhr, json);
+              }
+              var finalmsg = JSON.stringify(json);
+              xhr.send(finalmsg);
+          }
+          catch (e) { }
+        };
+
+
         // Creates the Xhr object to use to send the log request.
         // Sets out to create an Xhr object that can be used for CORS.
         // However, if there seems to be no CORS support on the browser,
         // returns a non-CORS capable Xhr.
-        AjaxAppender.prototype.getXhr = function (ajaxUrl) {
+        AjaxAppender.prototype.getXhr = function (synchronous) {
+            // Only determine the url right before you send a log request.
+            // Do not set the url when constructing the appender.
+            //
+            // This is because the server side component sets defaultAjaxUrl
+            // in a call to setOptions, AFTER the JL object and the default appender
+            // have been created.
+            var ajaxUrl = "/jsnlog.logger";
+            // This evaluates to true if defaultAjaxUrl is null or undefined
+            if (!(JL.defaultAjaxUrl == null)) {
+                ajaxUrl = JL.defaultAjaxUrl;
+            }
+            if (this.url) {
+                ajaxUrl = this.url;
+            }
+            // Send the json to the server.
+            // Note that there is no event handling here. If the send is not
+            // successful, nothing can be done about it.
+
+            var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
             var xhr = new XMLHttpRequest();
             // Check whether this xhr is CORS capable by checking whether it has
-            // withCredentials. 
+            // withCredentials.
             // "withCredentials" only exists on XMLHTTPRequest2 objects.
             if (!("withCredentials" in xhr)) {
                 // Just found that no XMLHttpRequest2 available.
@@ -546,13 +594,13 @@ var JL;
                     // http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx
                     // This means that for IE8 and IE9, CORS logging requests do not carry request ids.
                     var xdr = new XDomainRequest();
-                    xdr.open('POST', ajaxUrl);
+                    xdr.open('POST', ajaxUrl, synchronous);
                     return xdr;
                 }
             }
             // At this point, we're going with XMLHttpRequest, whether it is CORS capable or not.
             // If it is not CORS capable, at least will handle the non-CORS requests.
-            xhr.open('POST', ajaxUrl);
+            xhr.open('POST', ajaxUrl, synchronous);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.setRequestHeader('JSNLog-RequestId', JL.requestId);
             return xhr;
@@ -593,7 +641,7 @@ var JL;
                 this.clog(logEntry);
             }
         };
-        // IE11 has a console.debug function. But its console doesn't have 
+        // IE11 has a console.debug function. But its console doesn't have
         // the option to show/hide debug messages (the same way Chrome and FF do),
         // even though it does have such buttons for Error, Warn, Info.
         //
@@ -803,32 +851,32 @@ if (typeof define == 'function' && define.amd) {
 if (typeof __jsnlog_configure == 'function') {
     __jsnlog_configure(JL);
 }
-// Create onerror handler to log uncaught exceptions to the server side log, but only if there 
+// Create onerror handler to log uncaught exceptions to the server side log, but only if there
 // is no such handler already.
 // Must use "typeof window" here, because in NodeJs, window is not defined at all, so cannot refer to window in any way.
 if (typeof window !== 'undefined' && !window.onerror) {
     window.onerror = function (errorMsg, url, lineNumber, column, errorObj) {
-        // Send object with all data to server side log, using severity fatal, 
+        // Send object with all data to server side log, using severity fatal,
         // from logger "onerrorLogger"
         JL("onerrorLogger").fatalException({
             "msg": "Uncaught Exception",
             "errorMsg": errorMsg, "url": url,
             "line number": lineNumber, "column": column
         }, errorObj);
-        // Tell browser to run its own error handler as well   
+        // Tell browser to run its own error handler as well
         return false;
     };
 }
 // Deal with unhandled exceptions thrown in promises
 if (typeof window !== 'undefined' && !window.onunhandledrejection) {
     window.onunhandledrejection = function (event) {
-        // Send object with all data to server side log, using severity fatal, 
+        // Send object with all data to server side log, using severity fatal,
         // from logger "onerrorLogger"
         JL("onerrorLogger").fatalException({
             "msg": "unhandledrejection",
-            "errorMsg": event.reason ? event.reason.message : null
+            "errorMsg": event.reason.message
         }, event.reason);
-        // Tell browser to run its own error handler as well   
+        // Tell browser to run its own error handler as well
         return false;
     };
 }
