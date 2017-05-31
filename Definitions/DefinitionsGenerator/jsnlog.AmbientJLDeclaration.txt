@@ -1,0 +1,3 @@
+
+// Ambient declaration of the JL function itself
+declare function JL(loggerName?: string): JL.JSNLogLogger;

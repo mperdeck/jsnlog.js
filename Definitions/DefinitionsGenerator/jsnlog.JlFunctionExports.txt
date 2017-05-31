@@ -1,16 +1,7 @@
-﻿
-// Ambient declaration of the JL function itself
-declare function JL(loggerName?: string): JL.JSNLogLogger;
-
-declare namespace JL {
 	export function setOptions(options: JSNLogOptions): void;
 	export function createAjaxAppender(appenderName: string): JSNLogAjaxAppender;
 	export function createConsoleAppender(appenderName: string): JSNLogConsoleAppender;
 
-	export class Exception {
-		constructor(data: any, inner?: any);
-	}
-	
 	export function getOffLevel(): number;
 	export function getTraceLevel(): number;
 	export function getDebugLevel(): number;
@@ -19,4 +10,3 @@ declare namespace JL {
 	export function getErrorLevel(): number;
 	export function getFatalLevel(): number;
 	export function getAllLevel(): number;
-}

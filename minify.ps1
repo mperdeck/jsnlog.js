@@ -23,8 +23,9 @@ del jsnlog.min.js
 ren jsnlog.min.js.temp jsnlog.min.js
 
 
-cd Definitions 
+cd Definitions/DefinitionsGenerator 
 & cmd.exe /c generate.bat
+cd ..
 cd ..
 
 # ------------------------------------------------
