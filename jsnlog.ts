@@ -438,8 +438,13 @@ module JL
             // To determine if this is the first item, look at the timer variable.
             // Do not look at the buffer lenght, because we also put items in the buffer
             // via a concat (bypassing this function).
+            var that = this;
             if (!this.batchTimeoutTimer) {
-                this.batchTimeoutTimer = setTimeout(this.sendBatch, this.batchTimeout);
+                this.batchTimeoutTimer = setTimeout(function () {
+                    // use call to ensure that the this as used inside sendBatch when it runs is the
+                    // same this at this point.
+                    that.sendBatch.call(that);
+                }, this.batchTimeout);
             }
         };
 
