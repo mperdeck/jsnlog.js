@@ -532,10 +532,15 @@ module JL
                 this.sendBatch();
                 return;
             }
-        }
+        };
 
         // Processes the batch buffer
-        private sendBatch(): void
+        //
+        // Make this public, so it can be called from outside the library,
+        // when the page is unloaded.
+
+
+        public sendBatch(): void
         {
             this.clearTimeoutTimer();
 
