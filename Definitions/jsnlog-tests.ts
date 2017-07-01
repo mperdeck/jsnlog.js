@@ -12,13 +12,18 @@ var errorLevel: number = JL.getErrorLevel();
 var fatalLevel: number = JL.getFatalLevel();
 var allLevel: number = JL.getAllLevel();
 
+function specialSerialize(object: any): string {
+    return '';
+}
+
 JL.setOptions({
 		enabled: true,
 		maxMessages: 5,
 		defaultAjaxUrl: '/jsnlog.logger',
 		clientIP: '0.0.0.0',
 		requestId: 'a reuest id',
-		defaultBeforeSend: null
+		defaultBeforeSend: null,
+		serialize: specialSerialize
 });
 
 // ----------------------------------------------------------

@@ -5,6 +5,7 @@
 		clientIP?: string;
 		requestId?: string;
 		defaultBeforeSend?: (xhr: XMLHttpRequest) => void;
+		serialize?: (object: any) => string;
 	}
 
 	interface JSNLogFilterOptions {
