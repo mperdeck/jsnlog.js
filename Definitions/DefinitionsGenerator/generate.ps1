@@ -32,7 +32,9 @@ Function BuildDefinitionsFile([string]$templateFile, [string]$outputFile)
     $input = $input -replace "__JlFunctionExports.ForInterface__", $jlFunctionExportsForInterface
     $input = $input -replace "__ExceptionClass__", $exceptionClass
 
-    $input | Out-File $outputFile
+	# Do not use Out-File, because that inserts a BOM at the start of the file, which trips up
+	# some consumers.
+	[IO.File]::WriteAllLines($outputFile, $input)
 }
 
 Write-Host "Build jl.d.ts"
