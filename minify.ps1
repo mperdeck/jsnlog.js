@@ -10,6 +10,13 @@ If (Test-Path "jsnlog.min.js"){ Remove-Item "jsnlog.min.js" }
 # If the below throws an error, install the compiler: npm install -g typescript
 tsc jsnlog.ts
 
+# Remove the /// file include near the top of jsnlog.js
+# If you don't, Visual Studio generates warnings that the defintion file is missing
+cd C:\Dev\JSNLog\jsnlog.js
+Get-Content jsnlog.js | Where { $_ -notmatch "^///" } | Set-Content jsnlog.cleaned.js -Encoding ASCII
+del jsnlog.js
+ren jsnlog.cleaned.js jsnlog.js
+
 & java.exe -jar "C:\Utils\closure-compiler-v20170423.jar" --js jsnlog.js --js_output_file=jsnlog.min.js --create_source_map jsnlog.js.map
 
 
