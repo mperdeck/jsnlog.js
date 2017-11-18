@@ -122,6 +122,9 @@ module JL
     // in the log.
     export var requestId: string = '';
 
+    // Number uniquely identifying every log entry within the request.
+    export var entryId: number = 0;
+
     // Allow property injection of these classes, to enable unit testing
     export var _XMLHttpRequest = XMLHttpRequest;
     export var _console = console;
@@ -375,11 +378,12 @@ module JL
         // m: message
         // n: logger name
         // t (timeStamp) is number of milliseconds since 1 January 1970 00:00:00 UTC
+        // u: number uniquely identifying this entry for this request.
         //
         // Keeping the property names really short, because they will be sent in the
         // JSON payload to the server.
         constructor(public l: number, public m: string,
-            public n: string, public t: number) { }
+            public n: string, public t: number, public u: number) { }
     }
 
     // ---------------------
@@ -506,7 +510,8 @@ module JL
                 return;
             }
 
-            logItem = new LogItem(levelNbr, message, loggerName, (new Date).getTime());
+            logItem = new LogItem(levelNbr, message, loggerName, (new Date).getTime(), JL.entryId);
+            JL.entryId++;
 
             if (levelNbr < this.level)
             {
