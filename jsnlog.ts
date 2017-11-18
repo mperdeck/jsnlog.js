@@ -394,7 +394,9 @@ module JL
         private storeInBufferLevel: number = -2147483648;
         private bufferSize: number = 0; // buffering switch off by default
         private batchSize: number = 1;
+        private maxBatchSize: number = 20;
         private batchTimeout: number = 2147483647;
+        private sendTimeout: number = 5000;
 
         // Holds all log items with levels higher than storeInBufferLevel 
         // but lower than level. These items may never be sent.
@@ -458,7 +460,9 @@ module JL
             copyProperty("storeInBufferLevel", options, this);
             copyProperty("bufferSize", options, this);
             copyProperty("batchSize", options, this);
+            copyProperty("maxBatchSize", options, this);
             copyProperty("batchTimeout", options, this);
+            copyProperty("sendTimeout", options, this);
 
             if (this.bufferSize < this.buffer.length) { this.buffer.length = this.bufferSize; }
 
