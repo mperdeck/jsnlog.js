@@ -122,6 +122,10 @@ module JL
     // in the log.
     export var requestId: string = '';
 
+    // Allow property injection of these classes, to enable unit testing
+    export var _XMLHttpRequest = XMLHttpRequest;
+    export var _console = console;
+
     /**
     Copies the value of a property from one object to the other.
     This is used to copy property values as part of setOption for loggers and appenders.
@@ -672,7 +676,7 @@ module JL
 		// returns a non-CORS capable Xhr.
 		private getXhr(ajaxUrl: string): any
         {
-		    var xhr = new XMLHttpRequest();
+            var xhr = new JL._XMLHttpRequest();
 
 			// Check whether this xhr is CORS capable by checking whether it has
 			// withCredentials. 
@@ -719,14 +723,14 @@ module JL
 
         private clog(logEntry: string)
         {
-            console.log(logEntry);
+            JL._console.log(logEntry);
         }
 
         private cerror(logEntry: string)
         {
-            if (console.error)
+            if (JL._console.error)
             {
-                console.error(logEntry);
+                JL._console.error(logEntry);
             } else
             {
                 this.clog(logEntry);
@@ -735,9 +739,9 @@ module JL
 
         private cwarn(logEntry: string)
         {
-            if (console.warn)
+            if (JL._console.warn)
             {
-                console.warn(logEntry);
+                JL._console.warn(logEntry);
             } else
             {
                 this.clog(logEntry);
@@ -746,9 +750,9 @@ module JL
 
         private cinfo(logEntry: string)
         {
-            if (console.info)
+            if (JL._console.info)
             {
-                console.info(logEntry);
+                JL._console.info(logEntry);
             } else
             {
                 this.clog(logEntry);
@@ -764,9 +768,9 @@ module JL
         // will be much more popular with developers.
         private cdebug(logEntry: string)
         {
-            if (console.debug)
+            if (JL._console.debug)
             {
-                console.debug(logEntry);
+                JL._console.debug(logEntry);
             } else
             {
                 this.cinfo(logEntry);
@@ -777,7 +781,7 @@ module JL
         {
             try
             {
-                if (!console) { return; }
+                if (!JL._console) { return; }
 
                 var i;
                 for (i = 0; i < logItems.length; ++i)
