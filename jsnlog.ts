@@ -607,6 +607,7 @@ module JL
     {
         private url: string;
         private beforeSend: any;
+        private xhr: XMLHttpRequest;
 
         public setOptions(options: JSNLogAjaxAppenderOptions): JSNLogAjaxAppender
         {
@@ -642,6 +643,15 @@ module JL
             // determined right at the start of request processing.
             try
             {
+                // If a request is in progress, abort it.
+                // Otherwise, it may call the success callback, which will be very confusing.
+                // It may also stop the inflight request from resulting in a log at the server.
+
+                var xhrState = this.xhr.readyState;
+                if ((xhrState != 0) && (xhrState != 4)) {
+                    this.xhr.abort();
+                }
+
                 // Only determine the url right before you send a log request.
                 // Do not set the url when constructing the appender.
                 //
@@ -662,24 +672,6 @@ module JL
                     ajaxUrl = this.url;
                 }
 
-                // Send the json to the server. 
-                // Note that there is no event handling here. If the send is not
-                // successful, nothing can be done about it.
-
-                var xhr = this.getXhr(ajaxUrl);
-
-                xhr.onreadystatechange = function () {
-
-                    // On most browsers, if the request fails (eg. internet is gone),
-                    // it will set xhr.readyState == 4 and xhr.status != 200 (0 if request could not be sent) immediately.
-                    // However, Edge and IE will not change the readyState at all if the internet goes away while waiting
-                    // for a response.
-
-                    if ((xhr.readyState == 4) && (xhr.status == 200)) {
-                        successCallback();
-                    }
-                };
-
                 var json: any = {
                     r: JL.requestId,
                     lg: logItems
@@ -690,63 +682,43 @@ module JL
                 // then the global defaultBeforeSend callback
                 if (typeof this.beforeSend === 'function')
                 {
-                    this.beforeSend.call(this, xhr, json);
+                    this.beforeSend.call(this, this.xhr, json);
                 } else if (typeof JL.defaultBeforeSend === 'function')
                 {
-                    JL.defaultBeforeSend.call(this, xhr, json);
+                    JL.defaultBeforeSend.call(this, this.xhr, json);
                 }
 
                 var finalmsg = JSON.stringify(json);
-                xhr.send(finalmsg);
+
+                this.xhr.open('POST', ajaxUrl);
+                this.xhr.setRequestHeader('Content-Type', 'application/json');
+                this.xhr.setRequestHeader('JSNLog-RequestId', JL.requestId);
+
+                var that = this;
+                this.xhr.onreadystatechange = function () {
+
+                    // On most browsers, if the request fails (eg. internet is gone),
+                    // it will set xhr.readyState == 4 and xhr.status != 200 (0 if request could not be sent) immediately.
+                    // However, Edge and IE will not change the readyState at all if the internet goes away while waiting
+                    // for a response.
+
+                    if ((that.xhr.readyState == 4) && (that.xhr.status == 200)) {
+                        successCallback();
+                    }
+                };
+
+                this.xhr.send(finalmsg);
             } catch (e) { }
         }
-
-		// Creates the Xhr object to use to send the log request.
-		// Sets out to create an Xhr object that can be used for CORS.
-		// However, if there seems to be no CORS support on the browser,
-		// returns a non-CORS capable Xhr.
-		private getXhr(ajaxUrl: string): any
-        {
-            var xhr = new JL._XMLHttpRequest();
-
-			// Check whether this xhr is CORS capable by checking whether it has
-			// withCredentials. 
-			// "withCredentials" only exists on XMLHTTPRequest2 objects.
-	
-			if (!("withCredentials" in xhr)) {
-
-				// Just found that no XMLHttpRequest2 available.
-				// Check if XDomainRequest is available.
-				// This only exists in IE, and is IE's way of making CORS requests.
-
-				if (typeof XDomainRequest != "undefined") {
-
-					// Note that here we're not setting request headers on the XDomainRequest
-					// object. This is because this object doesn't let you do that:
-					// http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx
-					// This means that for IE8 and IE9, CORS logging requests do not carry request ids.
-
-					var xdr = new XDomainRequest();
-					xdr.open('POST', ajaxUrl);
-					return xdr;
-				}
-			}
-
-			// At this point, we're going with XMLHttpRequest, whether it is CORS capable or not.
-			// If it is not CORS capable, at least will handle the non-CORS requests.
-
-			xhr.open('POST', ajaxUrl);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.setRequestHeader('JSNLog-RequestId', JL.requestId);
-
-			return xhr;
-		}
 
         constructor(appenderName: string)
         {
             super(appenderName, AjaxAppender.prototype.sendLogItemsAjax);
+
+            this.xhr = new JL._XMLHttpRequest();
         }
     }
+
     // ---------------------
 
     export class ConsoleAppender extends Appender implements JSNLogConsoleAppender
