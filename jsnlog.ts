@@ -418,6 +418,18 @@ module JL
         // Can be null.
         private batchTimeoutTimer: number = null;
 
+        // Holds the id of the timer implementing the send timeout.
+        // Can be null.
+        private sendTimeoutTimer: number = null;
+
+        // Number of log items that has been skipped due to batch buffer at max size,
+        // since appender creation or since creation of the last "skipped" warning log entry.
+        private nbrLogItemsSkipped: number = 0;
+
+        // Will be 0 if no log request is outstanding at the moment.
+        // Otherwise the number of log items in the outstanding request.
+        private nbrLogItemsBeingSent: number = 0;
+
         // sendLogItems takes an array of log items. It will be called when
         // the appender has items to process (such as, send to the server).
         // sendLogItems will call successCallback after the items have been successfully sent.
