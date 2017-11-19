@@ -420,13 +420,15 @@ module JL
 
         // sendLogItems takes an array of log items. It will be called when
         // the appender has items to process (such as, send to the server).
+        // sendLogItems will call successCallback after the items have been successfully sent.
+        //
         // Note that after sendLogItems returns, the appender may truncate
         // the LogItem array, so the function has to copy the content of the array
         // in some fashion (eg. serialize) before returning.
 
         constructor(
             public appenderName: string,
-            public sendLogItems: (logItems: LogItem[]) => void)
+            public sendLogItems: (logItems: LogItem[], successCallback: () => void) => void)
         {
         }
 
@@ -602,7 +604,7 @@ module JL
             return this;
         }
 
-        public sendLogItemsAjax(logItems: LogItem[]): void
+        public sendLogItemsAjax(logItems: LogItem[], successCallback: () => void): void
         {
             // JSON.stringify is only supported on IE8+
             // Use try-catch in case we get an exception here.
@@ -653,6 +655,18 @@ module JL
                 // successful, nothing can be done about it.
 
                 var xhr = this.getXhr(ajaxUrl);
+
+                xhr.onreadystatechange = function () {
+
+                    // On most browsers, if the request fails (eg. internet is gone),
+                    // it will set xhr.readyState == 4 and xhr.status != 200 (0 if request could not be sent) immediately.
+                    // However, Edge and IE will not change the readyState at all if the internet goes away while waiting
+                    // for a response.
+
+                    if ((xhr.readyState == 4) && (xhr.status == 200)) {
+                        successCallback();
+                    }
+                };
 
                 var json: any = {
                     r: JL.requestId,
@@ -782,7 +796,7 @@ module JL
             }
         }
 
-        public sendLogItemsConsole(logItems: LogItem[]): void
+        public sendLogItemsConsole(logItems: LogItem[], successCallback: () => void): void
         {
             try
             {
@@ -820,6 +834,8 @@ module JL
             } catch (e)
             {
             }
+
+            successCallback();
         }
 
         constructor(appenderName: string)
