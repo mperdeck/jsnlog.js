@@ -386,7 +386,34 @@ module JL
             public n: string, public t: number, public u: number) { }
     }
 
+    function newLogItem(levelNbr: number, message: string, loggerName: string): LogItem {
+        JL.entryId++;
+        return new LogItem(levelNbr, message, loggerName, (new Date).getTime(), JL.entryId);
+    }
+
     // ---------------------
+
+    interface ITimer {
+        id: any;
+    }
+
+    function clearTimer(timer: ITimer): void {
+        if(timer.id) {
+            clearTimeout(timer.id);
+            timer.id = null;
+        }
+    }
+
+    function setTimer(timer: ITimer, timeoutMs: number, callback: () => void): void {
+        var that = this;
+        if(!timer.id) {
+            timer.id = setTimeout(function () {
+                // use call to ensure that the this as used inside sendBatch when it runs is the
+                // same this at this point.
+                callback.call(that);
+            }, timeoutMs);
+        }
+    }
 
     export class Appender implements JSNLogAppender, JSNLogFilterOptions
     {
@@ -416,11 +443,12 @@ module JL
 
         // Holds the id of the timer implementing the batch timeout.
         // Can be null.
-        private batchTimeoutTimer: number = null;
+        // This is an object, so it can be passed to a method that updated the timer variable.
+        private batchTimeoutTimer: ITimer = { id: null };
 
         // Holds the id of the timer implementing the send timeout.
         // Can be null.
-        private sendTimeoutTimer: number = null;
+        private sendTimeoutTimer: ITimer = { id: null };
 
         // Number of log items that has been skipped due to batch buffer at max size,
         // since appender creation or since creation of the last "skipped" warning log entry.
@@ -444,13 +472,6 @@ module JL
         {
         }
 
-        private clearTimeoutTimer(): void {
-            if (this.batchTimeoutTimer) {
-                clearTimeout(this.batchTimeoutTimer);
-                this.batchTimeoutTimer = null;
-            }
-        };
-
         private addLogItemToBuffer(logItem: LogItem): void {
             this.batchBuffer.push(logItem);
 
@@ -462,15 +483,21 @@ module JL
             // To determine if this is the first item, look at the timer variable.
             // Do not look at the buffer lenght, because we also put items in the buffer
             // via a concat (bypassing this function).
-            var that = this;
-            if (!this.batchTimeoutTimer) {
-                this.batchTimeoutTimer = setTimeout(function () {
-                    // use call to ensure that the this as used inside sendBatch when it runs is the
-                    // same this at this point.
-                    that.sendBatch.call(that);
-                }, this.batchTimeout);
-            }
+
+            setTimer(this.batchTimeoutTimer, this.batchTimeout, this.sendBatch);
         };
+
+        private sendBatchIfComplete(): void {
+            if (this.batchBuffer.length >= this.batchSize) {
+                this.sendBatch();
+            }
+        }
+
+        private onSendingEnded(): void {
+            clearTimer(this.sendTimeoutTimer);
+            this.nbrLogItemsBeingSent = 0;
+            this.sendBatchIfComplete();
+        }
 
         public setOptions(options: JSNLogAppenderOptions): JSNLogAppender
         {
@@ -524,8 +551,7 @@ module JL
                 return;
             }
 
-            logItem = new LogItem(levelNbr, message, loggerName, (new Date).getTime(), JL.entryId);
-            JL.entryId++;
+            logItem = newLogItem(levelNbr, message, loggerName);
 
             if (levelNbr < this.level)
             {
@@ -544,6 +570,13 @@ module JL
                 return;
             }
 
+            // If the batch buffer has reached its maximum limit, 
+            // skip the log item and increase the "skipped items" counter.
+            if (this.batchBuffer.length >= this.maxBatchSize) {
+                this.nbrLogItemsSkipped++;
+                return;
+            }
+
             if (levelNbr < this.sendWithBufferLevel)
             {
                 // Want to send the item, but not the contents of the buffer
@@ -559,22 +592,16 @@ module JL
                 this.addLogItemToBuffer(logItem);
             }
 
-            if (this.batchBuffer.length >= this.batchSize)
-            {
-                this.sendBatch();
-                return;
-            }
+            this.sendBatchIfComplete();
         };
 
         // Processes the batch buffer
         //
         // Make this public, so it can be called from outside the library,
         // when the page is unloaded.
-
-
         public sendBatch(): void
         {
-            this.clearTimeoutTimer();
+            clearTimer(this.batchTimeoutTimer);
 
             if (this.batchBuffer.length == 0)
             {
@@ -586,18 +613,42 @@ module JL
                 if (JL.maxMessages < 1) { return; }
             }
 
-
-
-            // If maxMessages is not null or undefined, then decrease it by the batch size.
-            // This can result in a negative maxMessages.
-            // Note that undefined==null (!)
-            if (!(JL.maxMessages == null))
-            {
-                JL.maxMessages -= this.batchBuffer.length;
+            if (this.nbrLogItemsBeingSent > 0) {
+                return;
             }
 
-            this.sendLogItems(this.batchBuffer);
-            this.batchBuffer.length = 0;
+            // Decided at this point to send contents of the buffer
+
+            this.nbrLogItemsBeingSent = this.batchBuffer.length;
+
+            setTimer(this.sendTimeoutTimer, this.sendTimeout, this.onSendingEnded);
+
+            var that = this;
+            this.sendLogItems(this.batchBuffer, function () {
+                // Log entries have been successfully sent to server
+
+                // Remove the first (nbrLogItemsBeingSent) items in the batch buffer, because they are the ones
+                // that were sent.
+                this.batchBuffer.splice(0, that.nbrLogItemsBeingSent);
+
+                // If maxMessages is not null or undefined, then decrease it by the batch size.
+                // This can result in a negative maxMessages.
+                // Note that undefined==null (!)
+                if (!(JL.maxMessages == null)) {
+                    JL.maxMessages -= that.nbrLogItemsBeingSent;
+                }
+
+                // If items had to be skipped, add a WARN message
+                if (this.nbrLogItemsSkipped > 0) {
+                    this.batchBuffer.push(
+                        newLogItem(getWarnLevel(),
+                            "Skipped " + this.nbrLogItemsSkipped + " entries that could not be stored while connection with the server was lost",
+                            that.appenderName));
+                    this.nbrLogItemsSkipped = 0;
+                }
+
+                that.onSendingEnded();
+            });
         }
     }
 
