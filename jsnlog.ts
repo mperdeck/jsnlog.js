@@ -515,6 +515,14 @@ module JL
 
             if (this.bufferSize < this.buffer.length) { this.buffer.length = this.bufferSize; }
 
+            if (this.maxBatchSize < this.batchSize) {
+                throw new JL.Exception({
+                    "message": "maxBatchSize cannot be smaller than batchSize",
+                    "maxBatchSize": this.maxBatchSize,
+                    "batchSize": this.batchSize
+                });
+            }
+
             return this;
         }
 
@@ -723,24 +731,6 @@ module JL
                     ajaxUrl = this.url;
                 }
 
-                var json: any = {
-                    r: JL.requestId,
-                    lg: logItems
-                };
-
-                // call beforeSend callback
-                // first try the callback on the appender
-                // then the global defaultBeforeSend callback
-                if (typeof this.beforeSend === 'function')
-                {
-                    this.beforeSend.call(this, this.xhr, json);
-                } else if (typeof JL.defaultBeforeSend === 'function')
-                {
-                    JL.defaultBeforeSend.call(this, this.xhr, json);
-                }
-
-                var finalmsg = JSON.stringify(json);
-
                 this.xhr.open('POST', ajaxUrl);
                 this.xhr.setRequestHeader('Content-Type', 'application/json');
                 this.xhr.setRequestHeader('JSNLog-RequestId', JL.requestId);
@@ -757,6 +747,22 @@ module JL
                         successCallback();
                     }
                 };
+
+                var json: any = {
+                    r: JL.requestId,
+                    lg: logItems
+                };
+
+                // call beforeSend callback
+                // first try the callback on the appender
+                // then the global defaultBeforeSend callback
+                if (typeof this.beforeSend === 'function') {
+                    this.beforeSend.call(this, this.xhr, json);
+                } else if (typeof JL.defaultBeforeSend === 'function') {
+                    JL.defaultBeforeSend.call(this, this.xhr, json);
+                }
+
+                var finalmsg = JSON.stringify(json);
 
                 this.xhr.send(finalmsg);
             } catch (e) { }
