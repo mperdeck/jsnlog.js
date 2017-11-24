@@ -637,7 +637,7 @@ module JL
 
                 // Remove the first (nbrLogItemsBeingSent) items in the batch buffer, because they are the ones
                 // that were sent.
-                this.batchBuffer.splice(0, that.nbrLogItemsBeingSent);
+                that.batchBuffer.splice(0, that.nbrLogItemsBeingSent);
 
                 // If maxMessages is not null or undefined, then decrease it by the batch size.
                 // This can result in a negative maxMessages.
@@ -647,12 +647,12 @@ module JL
                 }
 
                 // If items had to be skipped, add a WARN message
-                if (this.nbrLogItemsSkipped > 0) {
-                    this.batchBuffer.push(
+                if (that.nbrLogItemsSkipped > 0) {
+                    that.batchBuffer.push(
                         newLogItem(getWarnLevel(),
                             "Skipped " + this.nbrLogItemsSkipped + " entries that could not be stored while connection with the server was lost",
                             that.appenderName));
-                    this.nbrLogItemsSkipped = 0;
+                    that.nbrLogItemsSkipped = 0;
                 }
 
                 that.onSendingEnded();
