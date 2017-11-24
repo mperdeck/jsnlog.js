@@ -650,7 +650,7 @@ module JL
                 if (that.nbrLogItemsSkipped > 0) {
                     that.batchBuffer.push(
                         newLogItem(getWarnLevel(),
-                            "Skipped " + this.nbrLogItemsSkipped + " entries that could not be stored while connection with the server was lost",
+                            "Lost " + this.nbrLogItemsSkipped + " while connection with the server was down. Reduce lost messages by increasing the ajaxAppender option maxBatchSize.",
                             that.appenderName));
                     that.nbrLogItemsSkipped = 0;
                 }
