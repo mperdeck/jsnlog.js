@@ -629,9 +629,11 @@ module JL
 
             this.nbrLogItemsBeingSent = this.batchBuffer.length;
 
-            setTimer(this.sendTimeoutTimer, this.sendTimeout, this.onSendingEnded);
-
             var that = this;
+            setTimer(this.sendTimeoutTimer, this.sendTimeout, function () {
+                that.onSendingEnded.call(that);
+            });
+
             this.sendLogItems(this.batchBuffer, function () {
                 // Log entries have been successfully sent to server
 
@@ -655,7 +657,7 @@ module JL
                     that.nbrLogItemsSkipped = 0;
                 }
 
-                that.onSendingEnded();
+                that.onSendingEnded.call(that);
             });
         }
     }
