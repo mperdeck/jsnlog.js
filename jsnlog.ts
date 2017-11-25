@@ -483,8 +483,13 @@ module JL
             // To determine if this is the first item, look at the timer variable.
             // Do not look at the buffer lenght, because we also put items in the buffer
             // via a concat (bypassing this function).
+            //
+            // The setTimer method only sets the timer if it is not already running.
 
-            setTimer(this.batchTimeoutTimer, this.batchTimeout, this.sendBatch);
+            var that = this;
+            setTimer(this.batchTimeoutTimer, this.batchTimeout, function () {
+                that.sendBatch.call(that);
+            });
         };
 
         private sendBatchIfComplete(): void {
