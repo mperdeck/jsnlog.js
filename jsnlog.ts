@@ -126,7 +126,7 @@ module JL
     export var entryId: number = 0;
 
     // Allow property injection of these classes, to enable unit testing
-    export var _XMLHttpRequest = XMLHttpRequest;
+    export var _createXMLHttpRequest = function () { return new XMLHttpRequest(); };
     export var _console = console;
 
     /**
@@ -779,7 +779,7 @@ module JL
         {
             super(appenderName, AjaxAppender.prototype.sendLogItemsAjax);
 
-            this.xhr = new JL._XMLHttpRequest();
+            this.xhr = JL._createXMLHttpRequest();
         }
     }
 
