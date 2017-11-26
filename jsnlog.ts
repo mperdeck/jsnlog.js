@@ -481,6 +481,15 @@ module JL
             // and if we cut off at exactly maxMessages, we'd also loose the high severity message
             // that caused the trace messages to be sent (unless we cater for this specifically, which
             // is more complexity).
+            //
+            // If there are multiple appenders sending the same message, maxMessage will be decreased
+            // by each appender for the same message. This is:
+            // 1) only appenders know whether a message will actually be sent (based on storeInBufferLevel),
+            //    so the loggers couldn't do this update;
+            // 2) if you have multiple appenders hitting the same server, this may be what you want.
+            //
+            // In most cases there is only 1 appender, so this then doesn't matter.
+
             if (!(JL.maxMessages == null)) {
                 if (JL.maxMessages < 1) { return; }
 
