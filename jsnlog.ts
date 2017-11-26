@@ -166,15 +166,6 @@ module JL
             if (!JL.enabled) { return false; }
         }
 
-        // If maxMessages is not null or undefined, then if it is 0, then return false.
-        // Note that maxMessages contains number of messages that are still allowed to send.
-        // It is decremented each time messages are sent. It can be negative when batch size > 1.
-        // Note that undefined==null (!)
-        if (!(JL.maxMessages == null))
-        {
-            if (JL.maxMessages < 1) { return false; }
-        }
-
         // If the regex contains a bug, that will throw an exception.
         // Ignore this, and pass the log item (better too much than too little).
 
