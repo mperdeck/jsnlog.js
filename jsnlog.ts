@@ -472,8 +472,31 @@ module JL
         {
         }
 
-        private addLogItemToBuffer(logItem: LogItem): void {
-            this.batchBuffer.push(logItem);
+        private addLogItemsToBuffer(logItems: LogItem[]): void {
+
+            // If the batch buffer has reached its maximum limit, 
+            // skip the log item and increase the "skipped items" counter.
+            if (this.batchBuffer.length >= this.maxBatchSize) {
+                this.nbrLogItemsSkipped += logItems.length;
+                return;
+            }
+
+            // If maxMessages is not null or undefined, then decrease it by the batch size.
+            // This can result in a negative maxMessages.
+            // Note that undefined==null (!)
+            //
+            // Note that we may be sending more messages than the maxMessages limit allows,
+            // if we stored trace messages. Rationale is the buffer for trace messages is limited,
+            // and if we cut off at exactly maxMessages, we'd also loose the high severity message
+            // that caused the trace messages to be sent (unless we cater for this specifically, which
+            // is more complexity).
+            if (!(JL.maxMessages == null)) {
+                if (JL.maxMessages < 1) { return; }
+
+                JL.maxMessages -= logItems.length;
+            }
+
+            this.batchBuffer = this.batchBuffer.concat(logItems);
 
             // If this is the first item in the buffer, set the timer
             // to ensure it will be sent within the timeout period.
@@ -583,27 +606,19 @@ module JL
                 return;
             }
 
-            // If the batch buffer has reached its maximum limit, 
-            // skip the log item and increase the "skipped items" counter.
-            if (this.batchBuffer.length >= this.maxBatchSize) {
-                this.nbrLogItemsSkipped++;
-                return;
-            }
+            // Want to send the item
 
-            if (levelNbr < this.sendWithBufferLevel)
-            {
-                // Want to send the item, but not the contents of the buffer
-                this.addLogItemToBuffer(logItem);
-            } else  {
+            if (levelNbr >= this.sendWithBufferLevel) {
                 // Want to send both the item and the contents of the buffer.
                 // Send contents of buffer first, because logically they happened first.
                 if (this.buffer.length)
                 {
-                    this.batchBuffer = this.batchBuffer.concat(this.buffer);
+                    this.addLogItemsToBuffer(this.buffer);
                     this.buffer.length = 0;
                 }
-                this.addLogItemToBuffer(logItem);
             }
+
+            this.addLogItemsToBuffer([logItem]);
 
             this.sendBatchIfComplete();
         };
@@ -619,11 +634,6 @@ module JL
             if (this.batchBuffer.length == 0)
             {
                 return;
-            }
-
-            if (!(JL.maxMessages == null))
-            {
-                if (JL.maxMessages < 1) { return; }
             }
 
             if (this.nbrLogItemsBeingSent > 0) {
@@ -645,13 +655,6 @@ module JL
                 // Remove the first (nbrLogItemsBeingSent) items in the batch buffer, because they are the ones
                 // that were sent.
                 that.batchBuffer.splice(0, that.nbrLogItemsBeingSent);
-
-                // If maxMessages is not null or undefined, then decrease it by the batch size.
-                // This can result in a negative maxMessages.
-                // Note that undefined==null (!)
-                if (!(JL.maxMessages == null)) {
-                    JL.maxMessages -= that.nbrLogItemsBeingSent;
-                }
 
                 // If items had to be skipped, add a WARN message
                 if (that.nbrLogItemsSkipped > 0) {
