@@ -26,7 +26,9 @@
 		storeInBufferLevel?: number;
 		bufferSize?: number;
 		batchSize?: number;
+		maxBatchSize?: number;
 		batchTimeout?: number;
+		sendTimeout?: number;
 	}
 
 	interface JSNLogAjaxAppenderOptions extends JSNLogAppenderOptions {
