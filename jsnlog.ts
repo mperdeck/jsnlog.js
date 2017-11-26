@@ -608,17 +608,21 @@ module JL
 
             // Want to send the item
 
+            this.addLogItemsToBuffer([logItem]);
+
             if (levelNbr >= this.sendWithBufferLevel) {
-                // Want to send both the item and the contents of the buffer.
-                // Send contents of buffer first, because logically they happened first.
+                // Want to send the contents of the buffer.
+                //
+                // Send the buffer AFTER sending the high priority item.
+                // If you were to send the high priority item after the buffer,
+                // if we're close to maxMessages or maxBatchSize,
+                // then the trace messages in the buffer could crowd out the actual high priority item.
                 if (this.buffer.length)
                 {
                     this.addLogItemsToBuffer(this.buffer);
                     this.buffer.length = 0;
                 }
             }
-
-            this.addLogItemsToBuffer([logItem]);
 
             this.sendBatchIfComplete();
         };
