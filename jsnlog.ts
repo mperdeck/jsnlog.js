@@ -525,8 +525,18 @@ module JL
             return false;
         }
 
+        // Returns true if no more message will ever be added to the batch buffer,
+        // but the batch buffer has messages now - so if there are not enough to make up a batch,
+        // and there is no batch timeout, then they will never be sent. This is especially important if 
+        // maxMessages was reached while jsnlog.js was retrying sending messages to the server.
+        private batchBufferHasStrandedMessage(): boolean {
+            return (!(JL.maxMessages == null)) && (JL.maxMessages < 1) && (this.batchBuffer.length > 0);
+        }
+
         private sendBatchIfComplete(): void {
-            if ((this.batchBuffer.length >= this.batchSize) || this.batchBufferHasOverdueMessages()) {
+            if ((this.batchBuffer.length >= this.batchSize) ||
+                this.batchBufferHasOverdueMessages() ||
+                this.batchBufferHasStrandedMessage()) {
                 this.sendBatch();
             }
         }
