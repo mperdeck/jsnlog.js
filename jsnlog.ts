@@ -515,8 +515,17 @@ module JL
             });
         };
 
+        private batchBufferHasOverdueMessages(): boolean {
+            for (let i: number = 0; i < this.batchBuffer.length; i++) {
+                let messageAgeMs: number = (new Date).getTime() - this.batchBuffer[i].u;
+                if (messageAgeMs > this.batchTimeout) { return true; }
+            }
+
+            return false;
+        }
+
         private sendBatchIfComplete(): void {
-            if (this.batchBuffer.length >= this.batchSize) {
+            if ((this.batchBuffer.length >= this.batchSize) || this.batchBufferHasOverdueMessages()) {
                 this.sendBatch();
             }
         }
