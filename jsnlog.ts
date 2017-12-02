@@ -127,6 +127,7 @@ module JL
 
     // Allow property injection of these classes, to enable unit testing
     export var _createXMLHttpRequest = function () { return new XMLHttpRequest(); };
+    export var _getTime = function () { return (new Date).getTime(); };
     export var _console = console;
 
     /**
@@ -379,7 +380,7 @@ module JL
 
     function newLogItem(levelNbr: number, message: string, loggerName: string): LogItem {
         JL.entryId++;
-        return new LogItem(levelNbr, message, loggerName, (new Date).getTime(), JL.entryId);
+        return new LogItem(levelNbr, message, loggerName, JL._getTime(), JL.entryId);
     }
 
     // ---------------------
@@ -517,7 +518,7 @@ module JL
 
         private batchBufferHasOverdueMessages(): boolean {
             for (let i: number = 0; i < this.batchBuffer.length; i++) {
-                let messageAgeMs: number = (new Date).getTime() - this.batchBuffer[i].u;
+                let messageAgeMs: number = JL._getTime() - this.batchBuffer[i].u;
                 if (messageAgeMs > this.batchTimeout) { return true; }
             }
 
