@@ -518,7 +518,7 @@ module JL
 
         private batchBufferHasOverdueMessages(): boolean {
             for (let i: number = 0; i < this.batchBuffer.length; i++) {
-                let messageAgeMs: number = JL._getTime() - this.batchBuffer[i].u;
+                let messageAgeMs: number = JL._getTime() - this.batchBuffer[i].t;
                 if (messageAgeMs > this.batchTimeout) { return true; }
             }
 
