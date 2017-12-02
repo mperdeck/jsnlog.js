@@ -643,14 +643,18 @@ module JL
         // when the page is unloaded.
         public sendBatch(): void
         {
+            // Do not clear the batch timer if you don't go ahead here because
+            // a send is already in progress. Otherwise the messages that were stopped from going out
+            // may get ignored because the batch timer never went off.
+
+            if (this.nbrLogItemsBeingSent > 0) {
+                return;
+            }
+
             clearTimer(this.batchTimeoutTimer);
 
             if (this.batchBuffer.length == 0)
             {
-                return;
-            }
-
-            if (this.nbrLogItemsBeingSent > 0) {
                 return;
             }
 
