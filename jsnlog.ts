@@ -1088,11 +1088,14 @@ module JL
     // -----------------------
     // In the browser, the default appender is the AjaxAppender.
     // Under nodejs (where there is no "window"), use the ConsoleAppender instead.
+    // 
+    // Do NOT create an AjaxAppender object if you are not on a browser (that is, window is not defined).
+    // That would try to create an XmlHttpRequest object, which will crash outside a browser.
 
-    var defaultAppender: Appender = new AjaxAppender("");
-    if (typeof window === 'undefined')
+    var defaultAppender: Appender = new ConsoleAppender("");
+    if (typeof window !== 'undefined')
     {
-        defaultAppender = new ConsoleAppender("");
+        defaultAppender = new AjaxAppender("");
     }
 
     // Create root logger
