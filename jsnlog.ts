@@ -781,7 +781,7 @@ module JL
                     // However, Edge and IE will not change the readyState at all if the internet goes away while waiting
                     // for a response.
 
-                    if ((that.xhr.readyState == 4) && (that.xhr.status == 200)) {
+                    if ((that.xhr.readyState == 4) && (that.xhr.status >= 200 && that.xhr.status < 300)) {
                         successCallback();
                     }
                 };
