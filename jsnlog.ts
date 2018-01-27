@@ -296,7 +296,9 @@ module JL
                         finalString = JSON.stringify(actualLogObject);
                     }
 
-                    return new StringifiedLogObject(null, actualLogObject, finalString);
+                    // Set the msg field to "" instead of null. Some Winston transports
+                    // assume that the msg field is not null.
+                    return new StringifiedLogObject("", actualLogObject, finalString);
                 }
             default:
                 return new StringifiedLogObject("unknown", null, "unknown");
