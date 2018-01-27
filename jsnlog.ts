@@ -781,7 +781,10 @@ module JL
                     // However, Edge and IE will not change the readyState at all if the internet goes away while waiting
                     // for a response.
 
-                    if ((that.xhr.readyState == 4) && (that.xhr.status == 200)) {
+                    // Some servers will return a 204 (success, no content) when the JSNLog endpoint
+                    // returns the empty response. So check on any code in the 2.. range, not just 200.
+
+                    if ((that.xhr.readyState == 4) && (that.xhr.status >= 200 && that.xhr.status < 300)) {
                         successCallback();
                     }
                 };
