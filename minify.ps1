@@ -1,4 +1,7 @@
 # Compiles jsnlog.ts into jsnlog.js, and then minifies into jsnlog.min.js
+#
+# This script has dependencies on the other projects in the JSNLog ecosystem. So it is not widely useful.
+# To compile your jsnlog.ts file, use TypeScript compiler. To minify the .js file, you could use google closure compiler, or any other uglifier.
 
 Write-Host "------ jsnlog.js/minify.ps1 -------"
 
@@ -17,6 +20,8 @@ Get-Content jsnlog.js | Where { $_ -notmatch "^///" } | Set-Content jsnlog.clean
 del jsnlog.js
 ren jsnlog.cleaned.js jsnlog.js
 
+# You can find the google closure compiler at
+# https://github.com/google/closure-compiler
 & java.exe -jar "C:\Utils\closure-compiler-v20170423.jar" --js jsnlog.js --js_output_file=jsnlog.min.js --create_source_map jsnlog.js.map
 
 
