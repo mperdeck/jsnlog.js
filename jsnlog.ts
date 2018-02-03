@@ -1123,6 +1123,10 @@ module JL
 declare var exports: any;
 if (typeof exports !== 'undefined')
 {
+    // Allows SystemJs to import jsnlog.js. See
+    // https://github.com/mperdeck/jsnlog.js/issues/56
+    exports.__esModule = true;
+
     exports.JL = JL;
 }
 
