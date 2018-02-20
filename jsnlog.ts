@@ -743,7 +743,7 @@ module JL
             try
             {
                 // Do not send logs, if JL.enabled is set to false
-                if (allow(this)) { return; }
+                if (!allow(this)) { return; }
 
                 // If a request is in progress, abort it.
                 // Otherwise, it may call the success callback, which will be very confusing.
@@ -888,7 +888,7 @@ module JL
             try
             {
                 // Do not send logs, if JL.enabled is set to false
-                if (allow(this)) { return; }
+                if (!allow(this)) { return; }
 
                 if (!JL._console) { return; }
 

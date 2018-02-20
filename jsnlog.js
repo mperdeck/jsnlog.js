@@ -634,7 +634,7 @@ function JL(loggerName) {
             // determined right at the start of request processing.
             try {
                 // Do not send logs, if JL.enabled is set to false
-                if (allow(this)) {
+                if (!allow(this)) {
                     return;
                 }
                 // If a request is in progress, abort it.
@@ -745,7 +745,7 @@ function JL(loggerName) {
         ConsoleAppender.prototype.sendLogItemsConsole = function (logItems, successCallback) {
             try {
                 // Do not send logs, if JL.enabled is set to false
-                if (allow(this)) {
+                if (!allow(this)) {
                     return;
                 }
                 if (!JL._console) {
