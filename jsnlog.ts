@@ -507,7 +507,7 @@ module JL
             // increase the timeout for the first item.
             //
             // To determine if this is the first item, look at the timer variable.
-            // Do not look at the buffer lenght, because we also put items in the buffer
+            // Do not look at the buffer length, because we also put items in the buffer
             // via a concat (bypassing this function).
             //
             // The setTimer method only sets the timer if it is not already running.
@@ -742,6 +742,9 @@ module JL
             // determined right at the start of request processing.
             try
             {
+                // Do not send logs, if JL.enabled is set to false
+                if (!allow(this)) { return; }
+
                 // If a request is in progress, abort it.
                 // Otherwise, it may call the success callback, which will be very confusing.
                 // It may also stop the inflight request from resulting in a log at the server.
@@ -884,6 +887,9 @@ module JL
         {
             try
             {
+                // Do not send logs, if JL.enabled is set to false
+                if (!allow(this)) { return; }
+
                 if (!JL._console) { return; }
 
                 var i;
