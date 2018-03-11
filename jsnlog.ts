@@ -690,7 +690,7 @@ module JL
                 if (that.nbrLogItemsSkipped > 0) {
                     that.batchBuffer.push(
                         newLogItem(getWarnLevel(),
-                            "Lost " + that.nbrLogItemsSkipped + " messages while connection with the server was down. Reduce lost messages by increasing the ajaxAppender option maxBatchSize.",
+                            "Lost " + that.nbrLogItemsSkipped + " messages. Either connection with the server was down or logging was disabled via the enabled option. Reduce lost messages by increasing the ajaxAppender option maxBatchSize.",
                             that.appenderName));
                     that.nbrLogItemsSkipped = 0;
                 }
@@ -742,7 +742,11 @@ module JL
             // determined right at the start of request processing.
             try
             {
-                // Do not send logs, if JL.enabled is set to false
+                // Do not send logs, if JL.enabled is set to false.
+                //
+                // Do not call successCallback here. After each timeout, jsnlog will retry sending the message.
+                // If jsnlog gets re-enabled, it will then log the number of messages logged.
+                // If it doesn't get re-enabled, amount of cpu cycles wasted is minimal.
                 if (!allow(this)) { return; }
 
                 // If a request is in progress, abort it.
@@ -888,6 +892,10 @@ module JL
             try
             {
                 // Do not send logs, if JL.enabled is set to false
+                //
+                // Do not call successCallback here. After each timeout, jsnlog will retry sending the message.
+                // If jsnlog gets re-enabled, it will then log the number of messages logged.
+                // If it doesn't get re-enabled, amount of cpu cycles wasted is minimal.
                 if (!allow(this)) { return; }
 
                 if (!JL._console) { return; }
