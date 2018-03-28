@@ -60,7 +60,7 @@ declare namespace JL {
 
 	interface JSNLogAjaxAppenderOptions extends JSNLogAppenderOptions {
 		url?: string;
-		beforeSend?: (xhr: XMLHttpRequest) => void;
+		beforeSend?: (xhr: XMLHttpRequest, json: any) => void;
 	}
 
 	interface JSNLogLogger {
