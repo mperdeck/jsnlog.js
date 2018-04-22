@@ -51,6 +51,7 @@
 
 	interface JSNLogAppender {
 		setOptions(options: JSNLogAppenderOptions): JSNLogAppender;
+        sendBatch(): void;
 	}
 
 	interface JSNLogAjaxAppender extends JSNLogAppender {

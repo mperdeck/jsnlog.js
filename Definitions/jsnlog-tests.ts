@@ -49,6 +49,8 @@ ajaxAppender1.setOptions({
 		beforeSend: null
 });
 
+ajaxAppender1.sendBatch();
+
 // ----------------------------------------------------------
 // Console Appender
 
@@ -64,6 +66,8 @@ consoleAppender1.setOptions({
 		bufferSize: 10,
 		batchSize: 2
 });
+
+consoleAppender1.sendBatch();
 
 
 // ----------------------------------------------------------
