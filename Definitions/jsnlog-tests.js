@@ -39,6 +39,7 @@ ajaxAppender1.setOptions({
     url: '/jsnlog.logger',
     beforeSend: null
 });
+ajaxAppender1.sendBatch();
 // ----------------------------------------------------------
 // Console Appender
 var consoleAppender1 = JL.createConsoleAppender('consoleAppender');
@@ -52,6 +53,7 @@ consoleAppender1.setOptions({
     bufferSize: 10,
     batchSize: 2
 });
+consoleAppender1.sendBatch();
 // ----------------------------------------------------------
 // Loggers
 var logger1 = JL('mylogger');

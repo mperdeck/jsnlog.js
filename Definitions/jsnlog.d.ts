@@ -12,7 +12,7 @@
 
 
 
-// Type definitions for JSNLog v2.26.1+
+// Type definitions for JSNLog v2.26.2+
 // Project: https://github.com/mperdeck/jsnlog.js
 // Definitions by: Mattijs Perdeck <https://github.com/mperdeck>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
@@ -78,6 +78,7 @@ declare namespace JL {
 
 	interface JSNLogAppender {
 		setOptions(options: JSNLogAppenderOptions): JSNLogAppender;
+        sendBatch(): void;
 	}
 
 	interface JSNLogAjaxAppender extends JSNLogAppender {
