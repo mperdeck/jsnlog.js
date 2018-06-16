@@ -1185,10 +1185,15 @@ if (typeof window !== 'undefined' && !(<any>window).onunhandledrejection) {
     (<any>window).onunhandledrejection = function (event) {
 
         // Send object with all data to server side log, using severity fatal, 
-        // from logger "onerrorLogger"
+        // from logger "onerrorLogger".
+
+        // Need to check both event.reason.message and event.message,
+        // because SystemJs wraps exceptions and throws a new object which doesn't have a reason property.
+        // See https://github.com/systemjs/systemjs/issues/1309
+
         JL("onerrorLogger").fatalException({
             "msg": "unhandledrejection",
-            "errorMsg": event.reason ? event.reason.message : null
+            "errorMsg": event.reason ? event.reason.message : event.message || null
         }, event.reason);
     };
 }
