@@ -124,6 +124,10 @@ module JL
     export var _getTime = function () { return (new Date).getTime(); };
     export var _console = console;
 
+    // ----- private variables
+
+    export var _appenderNames: string[] = [];
+
     /**
     Copies the value of a property from one object to the other.
     This is used to copy property values as part of setOption for loggers and appenders.
@@ -458,6 +462,26 @@ module JL
             public appenderName: string,
             public sendLogItems: (logItems: LogItem[], successCallback: () => void) => void)
         {
+            var emptyNameErrorMessage = "Trying to create an appender without a name or with an empty name";
+
+            // This evaluates to true if appenderName is either null or undefined!
+            // Do not check here if the name is "", because that would stop you creating the 
+            // default appender.
+            if (appenderName == undefined) {
+                throw emptyNameErrorMessage;
+            }
+
+            if (JL._appenderNames.indexOf(appenderName) != -1) {
+                // If user passed in "", that will now have been picked up as a duplicate
+                // because default appender also uses "".
+                if (!appenderName) {
+                    throw emptyNameErrorMessage;
+                }
+
+                throw "Multiple appenders use the same name " + appenderName;
+            }
+
+            JL._appenderNames.push(appenderName);
         }
 
         private addLogItemsToBuffer(logItems: LogItem[]): void {
@@ -1105,10 +1129,14 @@ module JL
     // Do NOT create an AjaxAppender object if you are not on a browser (that is, window is not defined).
     // That would try to create an XmlHttpRequest object, which will crash outside a browser.
 
-    var defaultAppender: Appender = new ConsoleAppender("");
+    var defaultAppender: Appender;
     if (typeof window !== 'undefined')
     {
         defaultAppender = new AjaxAppender("");
+    }
+    else 
+    {
+        defaultAppender = new ConsoleAppender("");
     }
 
     // Create root logger
