@@ -2,7 +2,7 @@
   "name": "jsnlog.js",
   "repo": "component/jsnlog.js",
   "description": "Tiny JavaScript logging library, simple and well documented. Lots of options to filter logging data. Sends log data to the server using AJAX.",
-  "version": "2.27.1",
+  "version": "2.28.0",
   "homepage": "http://js.jsnlog.com",
   "authors": [
     {
