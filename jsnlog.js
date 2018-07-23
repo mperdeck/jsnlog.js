@@ -983,7 +983,8 @@ if (typeof window !== 'undefined' && !window.onerror) {
         // from logger "onerrorLogger"
         JL("onerrorLogger").fatalException({
             "msg": "Uncaught Exception",
-            "errorMsg": errorMsg, "url": url,
+            "errorMsg": errorMsg.message || errorMsg,
+            "url": url,
             "line number": lineNumber, "column": column
         }, errorObj);
         // Tell browser to run its own error handler as well   
