@@ -1191,9 +1191,13 @@ if (typeof window !== 'undefined' && !window.onerror) {
     window.onerror = function (errorMsg, url, lineNumber, column, errorObj) {
         // Send object with all data to server side log, using severity fatal, 
         // from logger "onerrorLogger"
+		//
+		// Use errorMsg.message if available, so Angular 4 template errors will be logged.
+		// See https://github.com/mperdeck/jsnlog.js/pull/68
         JL("onerrorLogger").fatalException({
             "msg": "Uncaught Exception",
-            "errorMsg": errorMsg, "url": url,
+            "errorMsg": errorMsg ? ((<any>errorMsg).message || errorMsg) : '', 
+            "url": url,
             "line number": lineNumber, "column": column
         }, errorObj);
 
