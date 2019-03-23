@@ -49,13 +49,15 @@
 		log(level: number, logObject: any, e?: any): JSNLogLogger;
 	}
 
+    // setOptions and sendBatch have to be optional, so you can use a Winston transport as
+    // as a JSNLogAppender
 	interface JSNLogAppender {
-		setOptions(options: JSNLogAppenderOptions): JSNLogAppender;
-        sendBatch(): void;
+		setOptions?: (options: JSNLogAppenderOptions) => JSNLogAppender;
+        sendBatch?: () => void;
 	}
 
 	interface JSNLogAjaxAppender extends JSNLogAppender {
-		setOptions(options: JSNLogAjaxAppenderOptions): JSNLogAjaxAppender;
+		setOptions?: (options: JSNLogAjaxAppenderOptions) => JSNLogAjaxAppender;
 	}
 
 	interface JSNLogConsoleAppender extends JSNLogAppender {
