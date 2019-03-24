@@ -12,7 +12,7 @@
 
 
 
-// Type definitions for JSNLog v2.28.0+
+// Type definitions for JSNLog v2.29.0+
 // Project: https://github.com/mperdeck/jsnlog.js
 // Definitions by: Mattijs Perdeck <https://github.com/mperdeck>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
@@ -76,13 +76,15 @@ declare namespace JL {
 		log(level: number, logObject: any, e?: any): JSNLogLogger;
 	}
 
+    // setOptions and sendBatch have to be optional, so you can use a Winston transport as
+    // as a JSNLogAppender
 	interface JSNLogAppender {
-		setOptions(options: JSNLogAppenderOptions): JSNLogAppender;
-        sendBatch(): void;
+		setOptions?: (options: JSNLogAppenderOptions) => JSNLogAppender;
+        sendBatch?: () => void;
 	}
 
 	interface JSNLogAjaxAppender extends JSNLogAppender {
-		setOptions(options: JSNLogAjaxAppenderOptions): JSNLogAjaxAppender;
+		setOptions?: (options: JSNLogAjaxAppenderOptions) => JSNLogAjaxAppender;
 	}
 
 	interface JSNLogConsoleAppender extends JSNLogAppender {
