@@ -31,7 +31,7 @@ declare namespace JL {
 		defaultAjaxUrl?: string;
 		clientIP?: string;
 		requestId?: string;
-		defaultBeforeSend?: (xhr: XMLHttpRequest) => void;
+		defaultBeforeSend?: (xhr: XMLHttpRequest, json?: any) => void;
 		serialize?: (object: any) => string;
 	}
 
