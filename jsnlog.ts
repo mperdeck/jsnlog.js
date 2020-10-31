@@ -1102,7 +1102,10 @@ module JL
                     }
 
                     if (typeof JL.traceContextProvider === 'function') {
-                        var traceContext = JL.traceContextProvider.call();
+                        const providerTraceContext = JL.traceContextProvider();
+                        if (providerTraceContext !== undefined) {
+                            traceContext = providerTraceContext
+                        }
                     }
                 
                     // Pass message to all appenders
