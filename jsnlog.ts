@@ -8,7 +8,7 @@ import JSNLogAjaxAppenderOptions = JL.JSNLogAjaxAppenderOptions
 import JSNLogConsoleAppender = JL.JSNLogConsoleAppender
 import JSNLogFilterOptions = JL.JSNLogFilterOptions
 import JSNLogLogger = JL.JSNLogLogger
-import JSNLogLoggerTraceContext = JL.JSNLogLoggerTraceContext
+import JSNLogLoggerTraceContext = JL.JSNLogTraceContext
 import JSNLogLoggerOptions = JL.JSNLogLoggerOptions
 import JSNLogOptions = JL.JSNLogOptions
 
@@ -375,22 +375,33 @@ module JL
         // n: logger name
         // t (timeStamp) is number of milliseconds since 1 January 1970 00:00:00 UTC
         // u: number uniquely identifying this entry for this request.
+        // c: trace context, if provided
+        //
+        // Keeping the property names really short, because they will be sent in the
+        // JSON payload to the server.
+        constructor(public l: number, public m: string,
+            public n: string, public t: number, public u: number,
+            public c?: LogTraceContext) { }
+    }
+
+    export class LogTraceContext
+    {
         // d: distributed trace-id for W3C trace context
         // s: span-id of the span for this particular log message
         // p: parent span-id, if this span has a parent span
         //
         // Keeping the property names really short, because they will be sent in the
         // JSON payload to the server.
-        constructor(public l: number, public m: string,
-            public n: string, public t: number, public u: number,
-            public d?: string, public s?: string, public p?: string) { }
+        constructor(public d?: string, public s?: string, public p?: string) { }
     }
 
     function newLogItem(levelNbr: number, message: string, loggerName: string,
-            traceId?: string, spanId?: string, parentSpanId?: string): LogItem {
+            traceContext?: JSNLogTraceContext): LogItem {
         JL.entryId++;
+        const c = traceContext === undefined ? undefined 
+            : new LogTraceContext(traceContext.traceId, traceContext.spanId, traceContext.parentSpanId);
         return new LogItem(levelNbr, message, loggerName, JL._getTime(), JL.entryId,
-            traceId, spanId, parentSpanId);
+            c);
     }
 
     // ---------------------
@@ -625,7 +636,7 @@ module JL
         public log(
             level: string, msg: string, meta: any, callback: () => void,
             levelNbr: number, message: string, loggerName: string,
-            traceContext?: JSNLogLoggerTraceContext): void
+            traceContext?: JSNLogTraceContext): void
         {
             var logItem: LogItem;
 
@@ -638,8 +649,7 @@ module JL
                 return;
             }
 
-            logItem = newLogItem(levelNbr, message, loggerName, 
-                traceContext?.traceId, traceContext?.spanId, traceContext?.parentSpanId);
+            logItem = newLogItem(levelNbr, message, loggerName, traceContext);
 
             if (levelNbr < this.level)
             {
@@ -1044,7 +1054,7 @@ module JL
         // The resulting exception object is than worked into a message to the server.
         //
         // If there is no exception, logObject itself is worked into the message to the server.
-        public log(level: number, logObject: any, e?: any): JSNLogLogger
+        public log(level: number, logObject: any, e?: any, traceContext?: JSNLogTraceContext): JSNLogLogger
         {
             var i: number = 0;
             var compositeMessage: StringifiedLogObject;
@@ -1120,13 +1130,13 @@ module JL
             return this;
         }
 
-        public trace(logObject: any): JSNLogLogger { return this.log(getTraceLevel(), logObject); }
-        public debug(logObject: any): JSNLogLogger { return this.log(getDebugLevel(), logObject); }
-        public info(logObject: any): JSNLogLogger { return this.log(getInfoLevel(), logObject); }
-        public warn(logObject: any): JSNLogLogger { return this.log(getWarnLevel(), logObject); }
-        public error(logObject: any): JSNLogLogger { return this.log(getErrorLevel(), logObject); }
-        public fatal(logObject: any): JSNLogLogger { return this.log(getFatalLevel(), logObject); }
-        public fatalException(logObject: any, e: any): JSNLogLogger { return this.log(getFatalLevel(), logObject, e); }
+        public trace(logObject: any, traceContext?: JSNLogTraceContext): JSNLogLogger { return this.log(getTraceLevel(), logObject, undefined, traceContext); }
+        public debug(logObject: any, traceContext?: JSNLogTraceContext): JSNLogLogger { return this.log(getDebugLevel(), logObject, undefined, traceContext); }
+        public info(logObject: any, traceContext?: JSNLogTraceContext): JSNLogLogger { return this.log(getInfoLevel(), logObject, undefined, traceContext); }
+        public warn(logObject: any, traceContext?: JSNLogTraceContext): JSNLogLogger { return this.log(getWarnLevel(), logObject, undefined, traceContext); }
+        public error(logObject: any, traceContext?: JSNLogTraceContext): JSNLogLogger { return this.log(getErrorLevel(), logObject, undefined, traceContext); }
+        public fatal(logObject: any, traceContext?: JSNLogTraceContext): JSNLogLogger { return this.log(getFatalLevel(), logObject, undefined, traceContext); }
+        public fatalException(logObject: any, e: any, traceContext?: JSNLogTraceContext): JSNLogLogger { return this.log(getFatalLevel(), logObject, e, traceContext); }
     }
 
     export function createAjaxAppender(appenderName: string): JSNLogAjaxAppender

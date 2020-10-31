@@ -6,10 +6,10 @@
 		requestId?: string;
 		defaultBeforeSend?: (xhr: XMLHttpRequest) => void;
 		serialize?: (object: any) => string;
-		traceContextProvider?: () => JSNLogLoggerTraceContext;
+		traceContextProvider?: () => JSNLogTraceContext;
 	}
 
-	interface JSNLogLoggerTraceContext {
+	interface JSNLogTraceContext {
 		traceId: string;
 		spanId: string;
 		parentSpanId?: string;
