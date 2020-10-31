@@ -15,15 +15,15 @@ tsc jsnlog.ts
 
 # Remove the /// file include near the top of jsnlog.js
 # If you don't, Visual Studio generates warnings that the defintion file is missing
-cd C:\Dev\JSNLog\jsnlog.js
+cd $PSScriptRoot
 Get-Content jsnlog.js | Where { $_ -notmatch "^///" } | Set-Content jsnlog.cleaned.js -Encoding ASCII
 del jsnlog.js
 ren jsnlog.cleaned.js jsnlog.js
 
 # You can find the google closure compiler at
 # https://github.com/google/closure-compiler
-& java.exe -jar "C:\Utils\closure-compiler-v20170423.jar" --js jsnlog.js --js_output_file=jsnlog.min.js --create_source_map jsnlog.js.map
-
+# install via: npm install --save google-closure-compiler
+npx google-closure-compiler --js=jsnlog.js --js_output_file=jsnlog.min.js --create_source_map jsnlog.js.map
 
 # Add header with version number and copyright notice.
 cat versionheading.txt, jsnlog.js | sc jsnlog.js.temp
