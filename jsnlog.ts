@@ -1,3 +1,4 @@
+
 /// <reference path="Definitions/jsnlog_interfaces.d.ts"/>
 
 import JSNLogAppender = JL.JSNLogAppender
@@ -7,6 +8,7 @@ import JSNLogAjaxAppenderOptions = JL.JSNLogAjaxAppenderOptions
 import JSNLogConsoleAppender = JL.JSNLogConsoleAppender
 import JSNLogFilterOptions = JL.JSNLogFilterOptions
 import JSNLogLogger = JL.JSNLogLogger
+import JSNLogLoggerTraceContext = JL.JSNLogLoggerTraceContext
 import JSNLogLoggerOptions = JL.JSNLogLoggerOptions
 import JSNLogOptions = JL.JSNLogOptions
 
@@ -105,6 +107,7 @@ module JL
     export var clientIP: string;
     export var defaultBeforeSend: any;
     export var serialize: any;
+    export var traceContextProvider: any;
 
     // Initialise requestId to empty string. If you don't do this and the user
     // does not set it via setOptions, then the JSNLog-RequestId header will
@@ -312,6 +315,7 @@ module JL
         copyProperty("requestId", options, this);
         copyProperty("defaultBeforeSend", options, this);
         copyProperty("serialize", options, this);
+        copyProperty("traceContextProvider", options, this);
         return this;
     }
 
@@ -371,16 +375,22 @@ module JL
         // n: logger name
         // t (timeStamp) is number of milliseconds since 1 January 1970 00:00:00 UTC
         // u: number uniquely identifying this entry for this request.
+        // d: distributed trace-id for W3C trace context
+        // s: span-id of the span for this particular log message
+        // p: parent span-id, if this span has a parent span
         //
         // Keeping the property names really short, because they will be sent in the
         // JSON payload to the server.
         constructor(public l: number, public m: string,
-            public n: string, public t: number, public u: number) { }
+            public n: string, public t: number, public u: number,
+            public d?: string, public s?: string, public p?: string) { }
     }
 
-    function newLogItem(levelNbr: number, message: string, loggerName: string): LogItem {
+    function newLogItem(levelNbr: number, message: string, loggerName: string,
+            traceId?: string, spanId?: string, parentSpanId?: string): LogItem {
         JL.entryId++;
-        return new LogItem(levelNbr, message, loggerName, JL._getTime(), JL.entryId);
+        return new LogItem(levelNbr, message, loggerName, JL._getTime(), JL.entryId,
+            traceId, spanId, parentSpanId);
     }
 
     // ---------------------
@@ -614,7 +624,8 @@ module JL
         */
         public log(
             level: string, msg: string, meta: any, callback: () => void,
-            levelNbr: number, message: string, loggerName: string): void
+            levelNbr: number, message: string, loggerName: string,
+            traceContext?: JSNLogLoggerTraceContext): void
         {
             var logItem: LogItem;
 
@@ -627,7 +638,8 @@ module JL
                 return;
             }
 
-            logItem = newLogItem(levelNbr, message, loggerName);
+            logItem = newLogItem(levelNbr, message, loggerName, 
+                traceContext?.traceId, traceContext?.spanId, traceContext?.parentSpanId);
 
             if (levelNbr < this.level)
             {
@@ -1079,6 +1091,10 @@ module JL
                         }
                     }
 
+                    if (typeof JL.traceContextProvider === 'function') {
+                        var traceContext = JL.traceContextProvider.call();
+                    }
+                
                     // Pass message to all appenders
 
                     // Note that these appenders could be Winston transports
@@ -1094,7 +1110,8 @@ module JL
                     {
                         this.appenders[i].log(
                             levelToString(level), compositeMessage.msg, compositeMessage.meta, function () { },
-                            level, compositeMessage.finalString, this.loggerName);
+                            level, compositeMessage.finalString, this.loggerName, 
+                            traceContext);
                         i--;
                     }
                 }

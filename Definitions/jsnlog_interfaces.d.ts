@@ -36,6 +36,13 @@ declare namespace JL {
 		requestId?: string;
 		defaultBeforeSend?: (xhr: XMLHttpRequest) => void;
 		serialize?: (object: any) => string;
+		traceContextProvider?: () => JSNLogLoggerTraceContext;
+	}
+
+	interface JSNLogLoggerTraceContext {
+		traceId: string;
+		spanId: string;
+		parentSpanId?: string;
 	}
 
 	interface JSNLogFilterOptions {
