@@ -4,9 +4,12 @@
  * Copyright 2012-2017 Mattijs Perdeck All rights reserved.
  */
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -262,6 +265,7 @@ function JL(loggerName) {
         copyProperty("requestId", options, this);
         copyProperty("defaultBeforeSend", options, this);
         copyProperty("serialize", options, this);
+        copyProperty("traceContextProvider", options, this);
         return this;
     }
     JL.setOptions = setOptions;
@@ -328,22 +332,41 @@ function JL(loggerName) {
         // n: logger name
         // t (timeStamp) is number of milliseconds since 1 January 1970 00:00:00 UTC
         // u: number uniquely identifying this entry for this request.
+        // c: trace context, if provided
         //
         // Keeping the property names really short, because they will be sent in the
         // JSON payload to the server.
-        function LogItem(l, m, n, t, u) {
+        function LogItem(l, m, n, t, u, c) {
             this.l = l;
             this.m = m;
             this.n = n;
             this.t = t;
             this.u = u;
+            this.c = c;
         }
         return LogItem;
     }());
     JL.LogItem = LogItem;
-    function newLogItem(levelNbr, message, loggerName) {
+    var LogTraceContext = /** @class */ (function () {
+        // d: distributed trace-id for W3C trace context
+        // s: span-id of the span for this particular log message
+        // p: parent span-id, if this span has a parent span
+        //
+        // Keeping the property names really short, because they will be sent in the
+        // JSON payload to the server.
+        function LogTraceContext(d, s, p) {
+            this.d = d;
+            this.s = s;
+            this.p = p;
+        }
+        return LogTraceContext;
+    }());
+    JL.LogTraceContext = LogTraceContext;
+    function newLogItem(levelNbr, message, loggerName, traceContext) {
         JL.entryId++;
-        return new LogItem(levelNbr, message, loggerName, JL._getTime(), JL.entryId);
+        var c = traceContext === undefined ? undefined
+            : new LogTraceContext(traceContext.traceId, traceContext.spanId, traceContext.parentSpanId);
+        return new LogItem(levelNbr, message, loggerName, JL._getTime(), JL.entryId, c);
     }
     function clearTimer(timer) {
         if (timer.id) {
@@ -535,7 +558,7 @@ function JL(loggerName) {
         message - log item. If the user logged an object, this is the JSON string.  Not used by Winston transports.
         loggerName: name of the logger.  Not used by Winston transports.
         */
-        Appender.prototype.log = function (level, msg, meta, callback, levelNbr, message, loggerName) {
+        Appender.prototype.log = function (level, msg, meta, callback, levelNbr, message, loggerName, traceContext) {
             var logItem;
             if (!allow(this)) {
                 return;
@@ -547,7 +570,7 @@ function JL(loggerName) {
                 // Ignore the log item completely
                 return;
             }
-            logItem = newLogItem(levelNbr, message, loggerName);
+            logItem = newLogItem(levelNbr, message, loggerName, traceContext);
             if (levelNbr < this.level) {
                 // Store in the hold buffer. Do not send.
                 if (this.bufferSize > 0) {
@@ -864,7 +887,7 @@ function JL(loggerName) {
         // The resulting exception object is than worked into a message to the server.
         //
         // If there is no exception, logObject itself is worked into the message to the server.
-        Logger.prototype.log = function (level, logObject, e) {
+        Logger.prototype.log = function (level, logObject, e, traceContext) {
             var i = 0;
             var compositeMessage;
             var excObject;
@@ -895,6 +918,12 @@ function JL(loggerName) {
                             i--;
                         }
                     }
+                    if (typeof JL.traceContextProvider === 'function') {
+                        var providerTraceContext = JL.traceContextProvider();
+                        if (providerTraceContext !== undefined) {
+                            traceContext = providerTraceContext;
+                        }
+                    }
                     // Pass message to all appenders
                     // Note that these appenders could be Winston transports
                     // https://github.com/flatiron/winston
@@ -903,20 +932,20 @@ function JL(loggerName) {
                     // Do not add fields to compositeMessage.meta, otherwise the user's object will get that field out of the blue.
                     i = this.appenders.length - 1;
                     while (i >= 0) {
-                        this.appenders[i].log(levelToString(level), compositeMessage.msg, compositeMessage.meta, function () { }, level, compositeMessage.finalString, this.loggerName);
+                        this.appenders[i].log(levelToString(level), compositeMessage.msg, compositeMessage.meta, function () { }, level, compositeMessage.finalString, this.loggerName, traceContext);
                         i--;
                     }
                 }
             }
             return this;
         };
-        Logger.prototype.trace = function (logObject) { return this.log(getTraceLevel(), logObject); };
-        Logger.prototype.debug = function (logObject) { return this.log(getDebugLevel(), logObject); };
-        Logger.prototype.info = function (logObject) { return this.log(getInfoLevel(), logObject); };
-        Logger.prototype.warn = function (logObject) { return this.log(getWarnLevel(), logObject); };
-        Logger.prototype.error = function (logObject) { return this.log(getErrorLevel(), logObject); };
-        Logger.prototype.fatal = function (logObject) { return this.log(getFatalLevel(), logObject); };
-        Logger.prototype.fatalException = function (logObject, e) { return this.log(getFatalLevel(), logObject, e); };
+        Logger.prototype.trace = function (logObject, traceContext) { return this.log(getTraceLevel(), logObject, undefined, traceContext); };
+        Logger.prototype.debug = function (logObject, traceContext) { return this.log(getDebugLevel(), logObject, undefined, traceContext); };
+        Logger.prototype.info = function (logObject, traceContext) { return this.log(getInfoLevel(), logObject, undefined, traceContext); };
+        Logger.prototype.warn = function (logObject, traceContext) { return this.log(getWarnLevel(), logObject, undefined, traceContext); };
+        Logger.prototype.error = function (logObject, traceContext) { return this.log(getErrorLevel(), logObject, undefined, traceContext); };
+        Logger.prototype.fatal = function (logObject, traceContext) { return this.log(getFatalLevel(), logObject, undefined, traceContext); };
+        Logger.prototype.fatalException = function (logObject, e, traceContext) { return this.log(getFatalLevel(), logObject, e, traceContext); };
         return Logger;
     }());
     JL.Logger = Logger;
