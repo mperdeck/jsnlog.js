@@ -767,6 +767,13 @@ module JL
                 // If it doesn't get re-enabled, amount of cpu cycles wasted is minimal.
                 if (!allow(this)) { return; }
 
+                // If a request is in progress, abort it.
+                // Otherwise, it may call the success callback, which will be very confusing.
+                // It may also stop the inflight request from resulting in a log at the server.
+                if (this.xhr && (this.xhr.readyState != 0) && (this.xhr.readyState != 4)) {
+                  this.xhr.abort();
+                }
+              
                 // Because a react-native XMLHttpRequest cannot be reused it needs to be recreated with each request
                 this.xhr = JL._createXMLHttpRequest();
 
