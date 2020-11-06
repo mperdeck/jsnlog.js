@@ -770,11 +770,12 @@ module JL
                 // If a request is in progress, abort it.
                 // Otherwise, it may call the success callback, which will be very confusing.
                 // It may also stop the inflight request from resulting in a log at the server.
-
-                var xhrState = this.xhr.readyState;
-                if ((xhrState != 0) && (xhrState != 4)) {
-                    this.xhr.abort();
+                if (this.xhr && (this.xhr.readyState != 0) && (this.xhr.readyState != 4)) {
+                  this.xhr.abort();
                 }
+              
+                // Because a react-native XMLHttpRequest cannot be reused it needs to be recreated with each request
+                this.xhr = JL._createXMLHttpRequest();
 
                 // Only determine the url right before you send a log request.
                 // Do not set the url when constructing the appender.
@@ -839,8 +840,6 @@ module JL
         constructor(appenderName: string)
         {
             super(appenderName, AjaxAppender.prototype.sendLogItemsAjax);
-
-            this.xhr = JL._createXMLHttpRequest();
         }
     }
 
