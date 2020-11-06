@@ -36,6 +36,13 @@ declare namespace JL {
 		requestId?: string;
 		defaultBeforeSend?: (xhr: XMLHttpRequest) => void;
 		serialize?: (object: any) => string;
+		traceContextProvider?: () => JSNLogTraceContext;
+	}
+
+	interface JSNLogTraceContext {
+		traceId: string;
+		spanId: string;
+		parentSpanId?: string;
 	}
 
 	interface JSNLogFilterOptions {
@@ -69,14 +76,14 @@ declare namespace JL {
 	interface JSNLogLogger {
 		setOptions(options: JSNLogLoggerOptions): JSNLogLogger;
 
-		trace(logObject: any): JSNLogLogger;
-		debug(logObject: any): JSNLogLogger;
-		info(logObject: any): JSNLogLogger;
-		warn(logObject: any): JSNLogLogger;
-		error(logObject: any): JSNLogLogger;
-		fatal(logObject: any): JSNLogLogger;
-		fatalException(logObject: any, e: any): JSNLogLogger;
-		log(level: number, logObject: any, e?: any): JSNLogLogger;
+		trace(logObject: any, traceContext?: JSNLogTraceContext): JSNLogLogger;
+		debug(logObject: any, traceContext?: JSNLogTraceContext): JSNLogLogger;
+		info(logObject: any, traceContext?: JSNLogTraceContext): JSNLogLogger;
+		warn(logObject: any, traceContext?: JSNLogTraceContext): JSNLogLogger;
+		error(logObject: any, traceContext?: JSNLogTraceContext): JSNLogLogger;
+		fatal(logObject: any, traceContext?: JSNLogTraceContext): JSNLogLogger;
+		fatalException(logObject: any, e: any, traceContext?: JSNLogTraceContext): JSNLogLogger;
+		log(level: number, logObject: any, e?: any, traceContext?: JSNLogTraceContext): JSNLogLogger;
 	}
 
     // setOptions and sendBatch have to be optional, so you can use a Winston transport as

@@ -16,9 +16,9 @@
     "client",
     "exceptions",
     "ajax",
-    "timeouts", 
-	"debugging",
-	"winston"
+    "timeouts",
+    "debugging",
+    "winston"
   ],
   "author": "Matt Perdeck",
   "license": "MIT",
@@ -35,5 +35,8 @@
       "jsnlog.js.map",
       "jsnlog.js"
     ]
+  },
+  "dependencies": {
+    "typescript": "^4.0.5"
   }
 }
