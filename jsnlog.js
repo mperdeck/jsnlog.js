@@ -1,12 +1,15 @@
 /* 
- * JSNLog 2.29.0
+ * JSNLog 2.30.0
  * Open source under the MIT License.
  * Copyright 2012-2017 Mattijs Perdeck All rights reserved.
  */
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -617,9 +620,7 @@ function JL(loggerName) {
     var AjaxAppender = /** @class */ (function (_super) {
         __extends(AjaxAppender, _super);
         function AjaxAppender(appenderName) {
-            var _this = _super.call(this, appenderName, AjaxAppender.prototype.sendLogItemsAjax) || this;
-            _this.xhr = JL._createXMLHttpRequest();
-            return _this;
+            return _super.call(this, appenderName, AjaxAppender.prototype.sendLogItemsAjax) || this;
         }
         AjaxAppender.prototype.setOptions = function (options) {
             copyProperty("url", options, this);
@@ -662,10 +663,11 @@ function JL(loggerName) {
                 // If a request is in progress, abort it.
                 // Otherwise, it may call the success callback, which will be very confusing.
                 // It may also stop the inflight request from resulting in a log at the server.
-                var xhrState = this.xhr.readyState;
-                if ((xhrState != 0) && (xhrState != 4)) {
+                if (this.xhr && (this.xhr.readyState != 0) && (this.xhr.readyState != 4)) {
                     this.xhr.abort();
                 }
+                // Because a react-native XMLHttpRequest cannot be reused it needs to be recreated with each request
+                this.xhr = JL._createXMLHttpRequest();
                 // Only determine the url right before you send a log request.
                 // Do not set the url when constructing the appender.
                 //
